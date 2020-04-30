@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block head_title %}Order Summary {{block.super}}{%endblock%}
+{% block content %}
+  <main>
+    <div class="container">
+
+    <div class="table-responsive text-nowrap">
+    <h2>Order Summary</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Item Name</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Total Item Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for order_item in object.item.all %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ order_item.item.title }}</td>
+            <td>R{{ order_item.item.price }}</td>
+            <td>
+                <a href="{% url 'core:remove-single-item-from-cart' order_item.item.slug %}"><i class="fas fa-minus mr-2"></i></a>
+                {{ order_item.quantity }}
+                <a href="{% url 'core:add-single-item-to-cart' order_item.item.slug %}"><i class="fas fa-plus ml-2"></i></a>
+            </td>
+            <td>
+            {% if order_item.item.discount_price %}
+                R{{ order_item.get_total_discount_item_price }}
+                <span class="badge badge-primary">Saving R{{ order_item.get_amount_saved }}</span>
+            {% else %}
+                R{{ order_item.get_total_item_price }}
+            {% endif %}
+            <a style='color: red;' href="{% url 'core:remove-from-cart' order_item.item.slug %}" onclick="loadSpinner()">
+                <i class="fas fa-trash float-right"></i>
+                <!--Spinner-->
+                <div hidden id="spinner"></div>
+            </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan='5'>Your cart is empty</td>
+        </tr>
+        <tr>
+            <td colspan="5">
+            <a class='btn btn-primary float-right' href='/'>Continue shopping</a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% comment %} {% if object.coupon %}
+        <tr>
+            <td colspan="4"><b>Coupon</b></td>
+            <td><b>-R{{ object.coupon.amount }}</b></td>
+        </tr>
+        {% endif %} {% endcomment %}
+        {% if object.get_total %}
+        <tr>
+            <td colspan="4"><b>Order Total</b></td>
+            <td><b>R{{ object.get_total }}</b></td>
+        </tr>
+        <tr>
+            <td colspan="5">
+            <a class='btn btn-outline-warning float-right ml-2' href='/checkout/'>Proceed to checkout</a>
+            <a class='btn btn-outline-primary float-right' href='/'>Continue shopping</a>
+            </td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+    </div>
+
+    </div>
+  </main>
+  {% block extra_head %}
+    <style>
+        #spinner:not([hidden]) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        #spinner::after {
+        content: "";
+        width: 80px;
+        height: 80px;
+        border: 2px solid #f3f3f3;
+        border-top: 3px solid #0c0c0c;
+        border-radius: 100%;
+        will-change: transform;
+        animation: spin 1s infinite linear
+        }
+
+        @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+        }
+    </style>
+    <script>
+        var spinner = document.getElementById("spinner");
+
+        function loadSpinner() {
+        spinner.removeAttribute('hidden');
+        fetch('https://www.mocky.io/v2/5185415ba171ea3a00704eed?mocky-delay=5000ms')
+            .then(response => response.json())
+            .then(data => {
+            spinner.setAttribute('hidden', '');
+            console.log(data)
+            });
+        }
+    </script>
+  {%endblock extra_head%}
+{% endblock content %}
+
+

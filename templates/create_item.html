@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}
+{% if page == 'A'%}
+Add Item 
+{% elif page == 'E' %}
+  Edit Item 
+{%endif%}
+{{block.super}}{%endblock%}
+
+{% block content %}
+
+  <main >
+    <div class="container wow fadeIn">
+      {% if page == 'A' %}
+      <h3 class="text-center mt-3">Add Item Form</h3>
+      {% elif page == 'E' %}
+      <h3 class="text-center mt-3">Edit Item Form</h3>
+      {%endif%}
+      <div class="row">
+        <div class="col-md-12 mb-4">
+          <div class="card">
+            <form method="POST" class="card-body" enctype="multipart/form-data">
+              {% csrf_token %}
+                {{form|crispy}}
+                {{formset|crispy}}
+              <hr class="mb-4">
+              <button class="btn btn-outline-secondary btn-lg btn-block" style="border: 1px #2e3131!important; color: #2e3131!important;" type="submit">Post Item</button>
+
+            </form>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+{% endblock content %}

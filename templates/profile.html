@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block head_title %}Profile {{block.super}}{%endblock%}
+{% block content %}
+  <main>
+    <div class="container">
+
+    <div class="table-responsive text-nowrap">
+    <h2>Order Summary</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            {% comment %} <th scope="col">#</th> {% endcomment %}
+            <th scope="col">Item Name</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            {% comment %} <th scope="col">Size</th> {% endcomment %}
+            <th scope="col">Reference Code</th>
+            <th scope="col">Delivery Status</th>
+            <th scope="col">Total Item Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ord in order %}
+             {% for order_item in ord.item.all %}
+            <tr>
+                {% comment %} <th scope="row">{{ forloop.counter }}</th> {% endcomment %}
+                <td style="font-size:1rem; font-weight:400;">{{ order_item.item.title }}</td>
+                <td style="font-size:1rem; font-weight:400;">R{{ order_item.item.price }}</td>
+                <td style="font-size:1rem; font-weight:400;">
+                    &nbsp;&nbsp;&nbsp;&nbsp;{{ order_item.quantity }}                
+                </td>
+                {% comment %} <td style="font-size:1rem; font-weight:400;"> {{order_item.size}}</td> {% endcomment %}
+                <td style="font-size:1rem; font-weight:400;">{{ord.ref_code}}</td>
+                {%if ord.being_delivered and ord.received %}
+                <td style="font-size:1rem; font-weight:400;">Delivered</td>
+                {% elif ord.received %}
+                <td style="font-size:1rem; font-weight:400;">Delivered</td>
+                {% elif ord.being_delivered and ord.received is False %}
+                <td style="font-size:1rem; font-weight:400;">En Route</td>    
+                {%else%}            
+                <td style="font-size:1rem; font-weight:400;">Still In The Caf</td>    
+                {%endif%}
+                <td style="font-size:1rem; font-weight:400;">
+                {% if order_item.item.discount_price %}
+                    R{{ order_item.get_total_discount_item_price }}
+                    <span class="badge badge-primary">Saved R{{ order_item.get_amount_saved }}</span>
+                {% else %}
+                    R{{ order_item.get_total_item_price }}
+                {% endif %}
+
+                </td>
+                
+            </tr>
+            {% endfor %}
+        {% empty %}
+        <tr>
+            <td colspan='7'>You have not made any order</td>
+        </tr>
+        <tr>
+            <td colspan="7">
+            <a class='btn btn-outline-primary float-right' href='/'>Continue shopping</a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% comment %} {% if object.coupon %}
+        <tr>
+            <td colspan="4"><b>Coupon</b></td>
+            <td><b>-R{{ object.coupon.amount }}</b></td>
+        </tr>
+        {% endif %} {% endcomment %}
+        {% comment %} <tr>
+            <td colspan="5"><b>Order Total</b></td>
+            <td><b>R{{ total_price }}</b></td>
+        </tr> {% endcomment %}
+        {% if order %}
+        <tr>
+            <td colspan="7">
+            <a class='btn btn-outline-primary float-right' href='/'>Continue shopping</a>
+            </td>
+        </tr> 
+        {%endif%}
+        </tbody>
+    </table>
+
+        <hr>
+    </div>
+
+    </div>
+  </main>
+
+{% endblock content %}
+
+

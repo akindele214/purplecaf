@@ -1,0 +1,5 @@
+.view,body,html{height:100%}
+.carousel{height:100%}
+.carousel .carousel-inner,.carousel .carousel-inner .active,.carousel .carousel-inner .carousel-item{height:100%}
+@media (max-width:776px){.carousel{height:45%}}
+.page-footer{background-color:#2e3131}

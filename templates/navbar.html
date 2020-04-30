@@ -1,0 +1,171 @@
+{% load cart_template_tags %}
+{% comment %} 
+<nav style="background-color: #2e3131 ;" class="navbar fixed-top navbar-expand-lg navbar-dark  scrolling-navbar">
+    <div class="container">
+
+      <!-- Brand -->
+      <a class="navbar-brand waves-effect" href="/">
+        <strong style="color: ghostwhite;" class="blue-tet">NWUCAF</strong>
+      </a>
+
+      <!-- Collapse -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Links -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+        <!-- Left -->
+        <ul class="navbar-nav mr-auto">
+
+        </ul>
+
+        <!-- Right -->
+        <ul class="navbar-nav nav-flex-icons">
+          {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            <a href="{% url 'core:order-summary' %}"class="nav-link waves-effect">
+              <span class="badge red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
+              <i style="color: ghostwhite;" class="fas fa-shopping-cart"></i>
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Cart </span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'account_logout'%}" class="nav-link waves-effect">
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Logout </span>
+            </a>
+          </li>          
+
+          {% else %}
+
+          <li class="nav-item">
+            <a href="{% url 'account_login'%}" class="nav-link waves-effect">
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Login </span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'account_signup'%}" class="nav-link waves-effect">
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Sign Up </span>
+            </a>
+          </li>          
+          {% endif %}
+        </ul>
+      </div>
+
+    </div>
+</nav> 
+{% endcomment %}
+
+
+  
+<nav style="background-color: #2e3131;" class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">PurpleCAF</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    {% comment %} {%if request.user.is_authenticated %}
+    {% live_notify_badge as count %}
+    
+    {% if count %}
+    <span class="badge bage-light" style="color: #fafafa;">{{count}}
+    </span>
+    {%endif%}
+    {%endif%} {% endcomment %}
+
+    </button>
+    <div class="collapse navbar-collapse" id="navbarToggle">
+      <div class="navbar-nav mr-auto">
+        <!--<a class="nav-item nav-link" href="">About</a>-->
+    {% comment %} <form class="form-inline my-2 my-lg-0" METHOD ="GET" action="{% url 'blog-search' %}">
+    <input class="form-control mr-sm-1 " type="search" placeholder="Search" aria-label="Search" name="q" required>
+    <button class="btn btn-outline-info my-2 my-sm-0" type="submit"><i class="fas fa-search fa-1x"></i></button>
+    </form> {% endcomment %}
+      </div>
+      <!-- Navbar Right Side -->
+      <div class="navbar-nav">
+        {% if request.user.is_superuser%}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Admin
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="{% url 'core:add-item' %}">Add Item</a>
+            <a class="dropdown-item" href="{% url 'core:orders' %}">Orders</a>
+            {% comment %} <a class="dropdown-item" href="#">Saved Ads</a> {% endcomment %}
+            <div class="dropdown-divider"></div> 
+            {% comment %} <a class="dropdown-item drop down-toggle" data-toggle="dropdown" href="#">Category</a>
+                <div class="dropdown-menu" style='overflow-x: hidden; height: auto; max-height:100px;'>
+                  <a class="dropdown-item" href="">Accommodation</a>
+                  <a class="dropdown-item" href="">Sound Devices</a>
+                  <a class="dropdown-item" href="">Cell/Mobile/Wireless Phones</a>
+                  <a class="dropdown-item" href="">Books</a>
+                  <a class="dropdown-item" href="">Computers</a>
+                  <a class="dropdown-item" href="">TVs</a>
+                  <a class="dropdown-item" href="">Cosmetics</a>
+                  <a class="dropdown-item" href="">Miscellaneous</a>
+                </div> {% endcomment %}
+          </div>
+        </li>        
+        {%endif%}
+        {% if request.user.is_authenticated %}
+        <!--Shop-->
+        <li class="nav-item dropdown">
+            <a href="{% url 'core:order-summary' %}"class="nav-link waves-effect">
+              <span class="badge red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
+              <i style="color: ghostwhite;" class="fas fa-shopping-cart"></i>
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Cart </span>
+            </a>
+        </li>
+
+        <!-- Navbar Dropdown-->
+        <li class="nav-item dropdown">
+            <a href="{% url 'core:profile' %}" class="nav-link waves-effect">
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Profile </span>
+            </a>
+        </li>
+
+        <!-- Navbar Dropdown-->
+        <li class="nav-item dropdown">
+            <a href="{% url 'account_logout'%}" class="nav-link waves-effect">
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Logout </span>
+            </a>
+        </li>  
+
+        {% else %}
+        <li class="nav-item dropdown">
+          <a class="nav-item nav-link" href="{% url 'account_login'%}">Login</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-item nav-link" href="{% url 'account_signup' %}">Register</a>
+        </li>
+        {% comment %} <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Admin
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="">Post Ad</a>
+            <a class="dropdown-item" href="">My Ads</a>
+            <a class="dropdown-item" href="">Saved Ads</a>
+            <a class="dropdown-item" href="">All Ads</a>
+            <div class="dropdown-divider"></div> 
+            <a class="dropdown-item drop down-toggle" data-toggle="dropdown" href="#">Category</a>
+                <div class="dropdown-menu" style='overflow-x: hidden; height: auto; max-height:100px;'>
+                  <a class="dropdown-item" href="">Accommodation</a>
+                  <a class="dropdown-item" href="">Sound Devices</a>
+                  <a class="dropdown-item" href="">Cell/Mobile/Wireless Phones</a>
+                  <a class="dropdown-item" href="">Books</a>
+                  <a class="dropdown-item" href="">Computers</a>
+                  <a class="dropdown-item" href="">TVs</a>
+                  <a class="dropdown-item" href="">Cosmetics</a>
+                  <a class="dropdown-item" href="">Miscellaneous</a>
+                </div> 
+          </div>
+        </li>  {% endcomment %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</nav>
