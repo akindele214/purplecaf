@@ -44,6 +44,11 @@ ADDRESS_CHOICES = (
     ('C', 'cash'),
 )
 
+DELIVERY_CHOICE = (
+    ('RD', 'Residence Delivery'),
+    ('PU', 'Pick Up At Cafeteria')
+)
+
 
 class Item(models.Model):
     title = models.CharField(max_length=100)
@@ -153,6 +158,7 @@ class Order(models.Model):
         'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)        
     payment = models.ForeignKey(
         'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    delivery_option = models.CharField(max_length=2, choices=DELIVERY_CHOICE, blank=True, null=True)
     being_delivered = models.BooleanField(default=False)
     received = models.BooleanField(default=False)
 

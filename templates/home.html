@@ -49,7 +49,7 @@
 
   <main>
     <div class="container">
-
+      
       <!--Navbar-->
       <nav style="border-radius: 2px; background-color: #2e3131!important;" class="navbar navbar-expand-lg navbar-dark mdb-color lighten-3 mt-3 mb-5">
 
@@ -168,7 +168,12 @@
                   {% endif %}
                   </strong>
                 </h5>
-
+                <hr>
+                {%if item in cart%}
+                  <a class="btn cart-btn btn-outline-danger btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Remove From Cart</a>
+                {%else%}
+                  <a class="btn cart-btn btn-outline-primary btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Add To Cart</a>
+                {% endif %}
               </div>
               <!--Card content-->
 
@@ -220,7 +225,77 @@
       <!--Pagination-->
 
     </div>
+        <!--Spinner-->
+        <div hidden id="spinner"></div>
   </main>
+  <script type="text/javascript">
+      var cart_num = $(".cart_")
+      $(".cart-btn").click(function(e){
+      e.preventDefault();
+      var spinner = document.getElementById("spinner");
+      spinner.removeAttribute('hidden');
+      var this_ = $(this);
+      var likeUrl = this_.attr("data-href");
 
+      $.ajax({
+        url: likeUrl,
+        method: "GET",
+        data: {},
+        success: function(data){
+          var newLikes;
+          if (data.cart){
+
+            this_.attr('class', 'btn cart-btn btn-outline-danger btn-sm');
+            this_.text('Remove From Cart')
+            cart_num.html(data.count)
+            spinner.setAttribute('hidden', '');        
+          } else { 
+            this_.attr('class', 'btn cart-btn btn-outline-primary btn-sm');
+            this_.text('Add To Cart')
+            cart_num.html(data.count)
+            spinner.setAttribute('hidden', '');
+          }
+        }, error: function(error){
+          console.log("error")
+          console.log(error)
+        }
+      })
+    
+    })    
+  </script>
+    {% block extra_head %}
+    <style>
+        #spinner:not([hidden]) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        #spinner::after {
+        content: "";
+        width: 80px;
+        height: 80px;
+        border: 2px solid #f3f3f3;
+        border-top: 3px solid #0c0c0c;
+        border-radius: 100%;
+        will-change: transform;
+        animation: spin 1s infinite linear
+        }
+
+        @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+        }
+    </style>
+  {%endblock extra_head%}
 {% endblock content %}
 

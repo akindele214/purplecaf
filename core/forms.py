@@ -33,6 +33,10 @@ RESIDENCE_CHOICE = (
     ('LC', 'Lost City'),
 )
 
+DELIVERY_CHOICE = (
+    ('RD', 'Residence Delivery'),
+    ('PU', 'Pick Up At Cafeteria')
+)
 
 
 class CashCheckoutForm(forms.Form):
@@ -69,6 +73,7 @@ class CheckoutForm(forms.Form):
     set_default_shipping = forms.BooleanField(required=False)
     use_default_shipping = forms.BooleanField(required=False)
     
+    
     # shipping_country = CountryField(blank_label='(select country)').formfield(
     #     required=False,
     #     widget=CountrySelectWidget(attrs={
@@ -91,7 +96,8 @@ class CheckoutForm(forms.Form):
 
     payment_option = forms.ChoiceField(
         widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
-
+    delivery_option = forms.ChoiceField(
+        widget=forms.RadioSelect, choices=DELIVERY_CHOICE)
 
 class CouponForm(forms.Form):
     code = forms.CharField(widget=forms.TextInput(attrs={

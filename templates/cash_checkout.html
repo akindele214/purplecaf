@@ -13,10 +13,23 @@
             <form method="POST" class="card-body">
               {% csrf_token %}
 
-              <h3 class="text-center mb-2">Delivery address</h3>
+              <h3>Delivery Option</h3>
+
+              <div class="d-block my-3">
+                {% for value, name in form.fields.delivery_option.choices %}
+                  <div class="custom-control custom-radio m">
+                    <input id="{{ name }}" name="delivery_option" value="{{ value }}" type="radio" class="{{name}} custom-control-input" required>
+                    <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
+                  </div>                
+                {% endfor %}
+              </div>
+
+              <hr>
+
+
 
               <div class='hideable_shipping_form'>
-
+              <h3 class="mb-2">Delivery Address</h3>
                 <div class="md-form mb-4">
                   <input type='text' placeholder='' id='block_number' name='block_number' class='form-control' />
                   <label for="block_number" class="">Block Number</label>
@@ -50,10 +63,10 @@
                   </div>
                 </div>
 
-                <div class="custom-control custom-checkbox">
+                {% comment %} <div class="custom-control custom-checkbox">
                   <input type="checkbox" class="custom-control-input" name="same_billing_address" id="same_billing_address">
                   <label class="custom-control-label" for="same_billing_address">Billing address is the same as my shipping address</label>
-                </div>
+                </div> {% endcomment %}
                 <div class="custom-control custom-checkbox">
                   <input type="checkbox" class="custom-control-input" name="set_default_shipping" id="set_default_shipping">
                   <label class="custom-control-label" for="set_default_shipping">Save as default shipping address</label>
@@ -62,13 +75,11 @@
               </div>
 
               {% if default_shipping_address %}
-              <div class="custom-control custom-checkbox">
+              <div class="custom-control custom-checkbox choose_res">
                 <input type="checkbox" class="custom-control-input" name="use_default_shipping" id="use_default_shipping">
                 <label class="custom-control-label" for="use_default_shipping">Use default delivery address: {{ default_shipping_address.get_residence_name_display|truncatechars:10 }} {{default_shipping_address.cell_phone|truncatechars:10}}</label>
               </div>
               {% endif %}
-
-              <hr>
 
               {% comment %} <h3>Billing address</h3>
               <div class='hideable_billing_form'>
@@ -149,27 +160,42 @@
 
 {% block extra_scripts %}
 <script>
-var hideable_shipping_form = $('.hideable_shipping_form');
-var hideable_billing_form = $('.hideable_billing_form');
+  var hideable_shipping_form = $('.hideable_shipping_form');
+  var hideable_billing_form = $('.hideable_billing_form');
+  var hideable_default_res_form = $('.choose_res');
 
-var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
-var use_default_billing = document.querySelector("input[name=use_default_billing]");
+  var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
+  var use_default_billing = document.querySelector("input[name=use_default_billing]");
+  var pickup_order = document.querySelector("input[id='Pick Up At Cafeteria']");
+  var res_delivery = document.querySelector("input[id='Residence Delivery']")
 
-use_default_shipping.addEventListener('change', function() {
-  if (this.checked) {
-    hideable_shipping_form.hide();
-  } else {
-    hideable_shipping_form.show();
-  }
-})
 
-{% comment %} use_default_billing.addEventListener('change', function() {
-  if (this.checked) {
-    hideable_billing_form.hide();
-  } else {
-    hideable_billing_form.show();
-  }
-}) {% endcomment %}
+  pickup_order.addEventListener('change', function() {
+    if (this.checked) {
+      hideable_shipping_form.hide();
+      hideable_default_res_form.hide();
+    } else {
+      hideable_shipping_form.show();
+      hideable_default_res_form.show()
+    }
+  })
 
+  res_delivery.addEventListener('change', function() {
+    if (this.checked) {
+      hideable_shipping_form.show();
+      hideable_default_res_form.show();
+    } else {
+      hideable_shipping_form.hide();
+      hideable_default_res_form.hide();
+    }
+  })
+
+  use_default_shipping.addEventListener('change', function() {
+    if (this.checked) {
+      hideable_shipping_form.hide();
+    } else {
+      hideable_shipping_form.show();
+    }
+  })
 </script>
 {% endblock extra_scripts %}

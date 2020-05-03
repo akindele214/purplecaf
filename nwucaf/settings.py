@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'crispy_forms',
+    'rest_framework',
     'phonenumber_field',
     'notifications',
     'django.contrib.staticfiles',
@@ -110,7 +111,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -141,3 +148,28 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+ACCOUNT_UNIQUE_EMAIL = True
+
+ACCOUNT_EMAIL_REQUIRED=True
+
+ACCOUNT_USERNAME_REQURIED=True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+# EMAIL_PORT = 465
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# EMAIL_USE_SSL = True
+
+EMAIL_HOST_USER = '181hub@gmail.com'
+
+EMAIL_HOST_PASSWORD = 'akindele/97'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '12077509443-o1bjp988p7dnb5hf6k8sebfoj168gbas.apps.googleusercontent.com'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'uWyMaJDFck3qNtXnifTMl9D4'

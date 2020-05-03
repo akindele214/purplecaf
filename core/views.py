@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import random
-import string
+import string, json
 import requests
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,11 +12,18 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 # Create your views here.
 from .models import Item, Images, Order, OrderItem, Address, Payment
 from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm
 from django.forms import modelformset_factory
+
+# REST FRAMEWORK
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import authentication, permissions
+
 
 def is_valid_form(values):
     valid = True
@@ -42,11 +49,35 @@ class HomeView(ListView):
     ordering = ['pk']
 
     # def get(self, *args, **kwargs):
-    #     prod_ = Item.objects.all().order_by('-pk')
+    # def get_queryset(self):
+    #     prod_ = Item.objects.all().order_by('pk')
+    #     item = []
+    #     if self.request.user.is_authenticated:
+    #         order = Order.objects.filter(user=self.request.user, ordered=False)
+    #         if order.exists():
+    #             order = order[0]
+    #             for i in order.item.all():
+    #                 item.append(i.item)
+    #     print(item)
     #     context = {
-    #         'object_list': prod_
+    #         # 'object_list': prod_,
+    #         'cart': item
     #     }
-    #     return render(self.request, 'home.html',context)
+    #     return context
+        # return render(self.request, 'home.html',context)
+    def get_context_data(self, *args, **kwargs):
+        prod_ = Item.objects.all().order_by('pk')
+        item = []
+        context = super().get_context_data(*args, **kwargs)
+        if self.request.user.is_authenticated:
+            order = Order.objects.filter(user=self.request.user, ordered=False)
+            if order.exists():
+                order = order[0]
+                for i in order.item.all():
+                    item.append(i.item)
+        context['cart'] = item
+        
+        return context        
 
 class AddItemView(UserPassesTestMixin, View):
     
@@ -348,7 +379,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
             return redirect("/")
 
 
-class CashCheckOutView(LoginRequiredMixin, View):
+class CheckOutView(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):
         try:
@@ -380,61 +411,72 @@ class CashCheckOutView(LoginRequiredMixin, View):
             if form.is_valid():
                 use_default_shipping = form.cleaned_data.get(
                     'use_default_shipping')
-                if use_default_shipping:
-                    print("Using the defualt shipping address")
-                    address_qs = Address.objects.filter(
-                        user=self.request.user,
-                        address_type='S',
-                        default=True
-                    )
-                    if address_qs.exists():
-                        shipping_address = address_qs[0]
-                        order.shipping_address = shipping_address
-                        order.save()
-                    else:
-                        messages.info(
-                            self.request, "No default shipping address available")
-                        return redirect('core:checkout')
-                else:
-                    print("User is entering a new shipping address")
-                    block_number = form.cleaned_data.get(
-                        'block_number')
-                    room_number = form.cleaned_data.get(
-                        'room_number')
-                    student_number = form.cleaned_data.get(
-                        'student_number')
-                    cell_phone = form.cleaned_data.get('cell_phone')
-                    residence_name = form.cleaned_data.get('residence_name')
-
-                    if is_valid_form([block_number, room_number, student_number, cell_phone, residence_name]):
-                        shipping_address = Address(
+                delivery_option = form.cleaned_data.get('delivery_option')
+                print(delivery_option)
+                if delivery_option == 'RD':
+                    if use_default_shipping:
+                        print("Using the defualt shipping address")
+                        address_qs = Address.objects.filter(
                             user=self.request.user,
-                            block_number=block_number,
-                            room_number=room_number,
-                            residence_name=residence_name,
-                            address_type='S'
+                            address_type='S',
+                            default=True
                         )
-                        shipping_address.save()
+                        if address_qs.exists():
+                            shipping_address = address_qs[0]
+                            order.delivery_option = delivery_option
+                            order.shipping_address = shipping_address
+                            order.save()
+                        else:
+                            messages.info(
+                                self.request, "No default shipping address available")
+                            return redirect('core:checkout')
+                    else:
+                        block_number = form.cleaned_data.get(
+                            'block_number')
+                        room_number = form.cleaned_data.get(
+                            'room_number')
+                        student_number = form.cleaned_data.get(
+                            'student_number')
+                        cell_phone = form.cleaned_data.get('cell_phone')
+                        residence_name = form.cleaned_data.get('residence_name')
 
-                        order.shipping_address = shipping_address
-                        order.save()
-
-                        set_default_shipping = form.cleaned_data.get(
-                            'set_default_shipping')
-                        if set_default_shipping:
-                            shipping_address.default = True
+                        if is_valid_form([block_number, room_number, student_number, cell_phone, residence_name]):
+                            shipping_address = Address(
+                                user=self.request.user,
+                                block_number=block_number,
+                                room_number=room_number,
+                                residence_name=residence_name,
+                                cell_phone = cell_phone,
+                                student_number = student_number,
+                                address_type='S'
+                            )
                             shipping_address.save()
 
-                    else:
-                        messages.info(
-                            self.request, "Please fill in the required shipping address fields")
+                            order.shipping_address = shipping_address
+                            order.delivery_option = delivery_option
+                            order.save()
+
+                            set_default_shipping = form.cleaned_data.get(
+                                'set_default_shipping')
+                            if set_default_shipping:
+                                shipping_address.default = True
+                                shipping_address.save()
+
+                        else:
+                            messages.info(
+                                self.request, "Please fill in the required shipping address fields")
+
+                elif delivery_option == 'PU':
+                    order.delivery_option = delivery_option
+                    order.save()
+
 
                 payment_option = form.cleaned_data.get('payment_option')
-
                 if payment_option == 'Card':
-                    return redirect('core:card-payment', payment_option='Card')
+                    # return render(self.request, "payment.html", {'method':'Card'})
+                    return redirect('core:card-payment')
                 elif payment_option == 'Cash':
-                    return redirect('core:cash-payment', payment_option='Cash')
+                    return render(self.request, "payment.html", {'method':'Cash'})
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
@@ -446,13 +488,13 @@ class CashCheckOutView(LoginRequiredMixin, View):
 
 class CashPaymentView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
-        payment_option  = self.kwargs['payment_option']
+        # payment_option  = self.kwargs['payment_option']
         order = Order.objects.get(user=self.request.user, ordered=False)
         if order.shipping_address:
             context = {
                 'order': order,
                 'DISPLAY_COUPON_FORM': False,
-                'method': payment_option
+                'method': 'Cash'
             }        
             return render(self.request, "payment.html", context)
         else:
@@ -624,10 +666,10 @@ class ProcessPaymentView(LoginRequiredMixin, View):
 
                 messages.success(self.request, 'Payment Successful')
                 
-                return redirect('core:home')
+                return render(self.request, 'home.html')
             else:
                 messages.warning(self.request, 'Payment Unsuccessful')
-                return redirect('core:home')
+                return render(self.request, 'home.html')
         return super(ProcessPaymentView, self).dispatch(request, *args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -683,20 +725,30 @@ class ProcessPaymentView(LoginRequiredMixin, View):
 
 class CardPaymentView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
-        payment_option  = self.kwargs['payment_option']
         order = Order.objects.get(user=self.request.user, ordered=False)
         user = self.request.user
-        if order.shipping_address:
+        if order.delivery_option == 'RD':
+            if order.shipping_address:
+                context = {
+                    'order': order,
+                    'DISPLAY_COUPON_FORM': False,
+                    'method': 'Card',
+                    'user': user
+                }        
+                return render(self.request, "payment.html", context)
+            else:
+                messages.info(self.request, "You have not added a shipping address")
+                return redirect('core:checkout')
+        elif order.delivery_option == 'PU':
             context = {
                 'order': order,
                 'DISPLAY_COUPON_FORM': False,
-                'method': payment_option,
-                'user': user
-            }        
+                'method': 'Card',
+                'user': user        
+                }
             return render(self.request, "payment.html", context)
-        else:
-            messages.info(self.request, "You have not added a shipping address")
-            return redirect('core:checkout')
+
+        return render(self.request, 'home.html')
 
 class CardPaymentSucessView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
@@ -708,3 +760,108 @@ class CardPaymentCancelView(LoginRequiredMixin, View):
         messages.info(self.request, 'Payment Unsuccessful')
         return redirect('core:home')
 
+@login_required
+def add_to_cart_json(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    order_item, created = OrderItem.objects.get_or_create(item=item, user=request.user,ordered=False)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    cart = False
+    count = 0
+    print(slug)
+    if order_qs.exists():
+        order = order_qs[0]
+        if order.item.filter(item__slug=item.slug).exists():
+            order.item.remove(order_item)
+            # order_item.quantity += 1
+            order_item.save()
+            count = order.item.count()
+            cart = False
+            # messages.info(request, "This item item quanity was updated.")
+            context = {
+                'cart': cart,
+                'count': count
+            }
+            return HttpResponse(json.dumps(context), content_type="application/json")
+            #return redirect("core:order-summary")
+            # return redirect("core:product", slug=slug)
+        
+        else:
+            order.item.add(order_item)
+            cart = True
+            count = order.item.count()
+            context = {
+                'cart': cart,
+                'count': count
+            }
+            return HttpResponse(json.dumps(context), content_type="application/json")
+            # messages.info(request,"This item was added to your cart.")
+            # return redirect("core:order-summary")
+            #  return redirect("core:product", slug=slug)
+
+    else:
+        order_date = timezone.now()
+        ref = create_ref_code()
+        order = Order.objects.create(user=request.user, ordered_date=order_date, ref_code=ref)
+        order.item.add(order_item)
+        cart = True
+        count = order.item.count()
+        context = {
+            'cart': cart,
+            'count': count
+        }
+        return HttpResponse(json.dumps(context), content_type="application/json")
+        # messages.info(request, "This item was added to your cart.")
+        # return redirect("core:order-summary")
+        # return redirect("core:product", slug=slug)
+
+
+
+# class PostLikeToggle(LoginRequiredMixin, RedirectView):
+#     def get_redirect_url(self, *args, **kwargs):
+#         pk = self.kwargs.get('pk')
+#         print(pk)
+#         obj = get_object_or_404(Post, pk=pk)
+#         url_ = obj.get_absolute_url()
+#         user = self.request.user
+#         if user.is_authenticated:
+#             if user in obj.likes.all():
+#                 obj.likes.remove(user)
+#             else:
+#                 obj.likes.add(user)
+#         return url_
+
+# class PostLikeAPIToggle(APIView):
+    
+    """
+    View to list all users in the system.
+
+    * Requires token authentication.
+    * Only admin users are able to access this view.
+    """
+    authentication_classes = [authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk=None, format=None):
+        # pk = self.kwargs.get('pk')
+        obj = get_object_or_404(Post, pk=pk)
+        url_ = obj.get_absolute_url()
+        user = self.request.user
+        updated = False
+        liked = False
+
+        if user.is_authenticated:
+            if user in obj.likes.all():
+                obj.likes.remove(user)
+                liked = False
+            else:
+                obj.likes.add(user)
+                liked = True
+                if request.user != obj.user:
+                    notify.send(request.user, recipient=obj.user, verb='liked your post', action_object=obj)
+            updated = True
+        data = {
+            "updated": updated,
+            "liked": liked,
+            "like_count": obj.likes.count()
+        }
+        return Response(data)
