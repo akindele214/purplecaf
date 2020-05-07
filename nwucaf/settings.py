@@ -43,9 +43,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'crispy_forms',
     'rest_framework',
-    'phonenumber_field',
-    'notifications',
     'django.contrib.staticfiles',
+    'webpush',
 ]
 
 MIDDLEWARE = [
@@ -130,6 +129,12 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BLo9X1JCqK1bP36UutiGQgp2MACheO3iYBMdEQ6qw17htY_RrGmtWn0vgEbkPj5-BwDc8BAoMIFNO969-lehRq8",
+    "VAPID_PRIVATE_KEY":"WIN1ntQB1-NXiVkrZP58TgFB7dr-gJJw5DnUnesRc1k",
+    "VAPID_ADMIN_EMAIL": "yaomingnakel@gmail.com"
+}
 
 
 # Static files (CSS, JavaScript, Images)

@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls')),
     path('accounts/', include('allauth.urls')),
-
+    url(r'^webpush/', include('webpush.urls'))
 ]
 
 if settings.DEBUG:

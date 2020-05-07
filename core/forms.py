@@ -1,12 +1,13 @@
 from django import forms
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
-from .models import Item
+from .models import Item, Order
+from django.forms import ModelForm
 
 
 PAYMENT_CHOICES = (
     ('Card', 'Card Payment'),
-    ('Cash', 'Cash On Delivery')
+    # ('Cash', 'Cash On Delivery')
 )
 
 SIZE_CHOICES = (
@@ -146,6 +147,9 @@ class ItemEditForm(forms.ModelForm):
         )
 
 
-class OrderDetailForm(forms.Form):
-    being_delivered = forms.BooleanField(required=False) 
-    delivered = forms.BooleanField(required=False)
+class OrderDetailForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ('being_delivered','received',)
+        # being_delivered = forms.BooleanField(required=False) 
+        # delivered = forms.BooleanField(required=False)

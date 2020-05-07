@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from webpush import send_user_notification
 
 # Create your views here.
 from .models import Item, Images, Order, OrderItem, Address, Payment
@@ -48,23 +49,6 @@ class HomeView(ListView):
     paginate_by = 12
     ordering = ['pk']
 
-    # def get(self, *args, **kwargs):
-    # def get_queryset(self):
-    #     prod_ = Item.objects.all().order_by('pk')
-    #     item = []
-    #     if self.request.user.is_authenticated:
-    #         order = Order.objects.filter(user=self.request.user, ordered=False)
-    #         if order.exists():
-    #             order = order[0]
-    #             for i in order.item.all():
-    #                 item.append(i.item)
-    #     print(item)
-    #     context = {
-    #         # 'object_list': prod_,
-    #         'cart': item
-    #     }
-    #     return context
-        # return render(self.request, 'home.html',context)
     def get_context_data(self, *args, **kwargs):
         prod_ = Item.objects.all().order_by('pk')
         item = []
@@ -562,8 +546,9 @@ class OrderDetailView(UserPassesTestMixin, View):
         ref = self.kwargs['ref']
         try:
             order_item = []
-            form = OrderDetailForm()
+            
             order = Order.objects.get(ref_code=ref, ordered=True)
+            form = OrderDetailForm(instance=order)
             for item in order.item.all():
                 order_item.append(item)
             context = {
@@ -586,12 +571,12 @@ class OrderDetailView(UserPassesTestMixin, View):
             form = OrderDetailForm(request.POST)
             if form.is_valid():
                 b_d = form.cleaned_data['being_delivered']
-                delivered = form.cleaned_data['delivered']
+                received = form.cleaned_data['received']
                 
                 order.being_delivered = b_d
-                if delivered:
-                    order.being_delivered = delivered
-                    order.received = delivered
+                if received:
+                    order.being_delivered = received
+                    order.received = received
                 order.save()
                 return redirect('core:orders')
 
@@ -615,8 +600,6 @@ class OrderListView(UserPassesTestMixin, ListView):
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# @csrf_exempt
 class ProcessPaymentView(LoginRequiredMixin, View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
@@ -662,8 +645,12 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 for item in order_items:
                     item.save()
                 order.save()
-
-
+                user_ = User.objects.get(username='lekan')
+                payload = {"head": "Order Alert!", "body": "New Order Alert", 
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://005103d6.ngrok.io/order/{item_name}/"}
+                # payload = {"head": "Welcome!", "body": "Hello World"}
+                send_user_notification(user=user_, payload=payload, ttl=1000)
+                print(dir(send_user_notification))
                 messages.success(self.request, 'Payment Successful')
                 
                 return render(self.request, 'home.html')
@@ -772,19 +759,15 @@ def add_to_cart_json(request, slug):
         order = order_qs[0]
         if order.item.filter(item__slug=item.slug).exists():
             order.item.remove(order_item)
-            # order_item.quantity += 1
             order_item.save()
             count = order.item.count()
-            cart = False
-            # messages.info(request, "This item item quanity was updated.")
+            cart = False            
             context = {
                 'cart': cart,
                 'count': count
             }
             return HttpResponse(json.dumps(context), content_type="application/json")
-            #return redirect("core:order-summary")
-            # return redirect("core:product", slug=slug)
-        
+
         else:
             order.item.add(order_item)
             cart = True
@@ -794,9 +777,6 @@ def add_to_cart_json(request, slug):
                 'count': count
             }
             return HttpResponse(json.dumps(context), content_type="application/json")
-            # messages.info(request,"This item was added to your cart.")
-            # return redirect("core:order-summary")
-            #  return redirect("core:product", slug=slug)
 
     else:
         order_date = timezone.now()
@@ -810,58 +790,4 @@ def add_to_cart_json(request, slug):
             'count': count
         }
         return HttpResponse(json.dumps(context), content_type="application/json")
-        # messages.info(request, "This item was added to your cart.")
-        # return redirect("core:order-summary")
-        # return redirect("core:product", slug=slug)
-
-
-
-# class PostLikeToggle(LoginRequiredMixin, RedirectView):
-#     def get_redirect_url(self, *args, **kwargs):
-#         pk = self.kwargs.get('pk')
-#         print(pk)
-#         obj = get_object_or_404(Post, pk=pk)
-#         url_ = obj.get_absolute_url()
-#         user = self.request.user
-#         if user.is_authenticated:
-#             if user in obj.likes.all():
-#                 obj.likes.remove(user)
-#             else:
-#                 obj.likes.add(user)
-#         return url_
-
-# class PostLikeAPIToggle(APIView):
-    
-    """
-    View to list all users in the system.
-
-    * Requires token authentication.
-    * Only admin users are able to access this view.
-    """
-    authentication_classes = [authentication.SessionAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, pk=None, format=None):
-        # pk = self.kwargs.get('pk')
-        obj = get_object_or_404(Post, pk=pk)
-        url_ = obj.get_absolute_url()
-        user = self.request.user
-        updated = False
-        liked = False
-
-        if user.is_authenticated:
-            if user in obj.likes.all():
-                obj.likes.remove(user)
-                liked = False
-            else:
-                obj.likes.add(user)
-                liked = True
-                if request.user != obj.user:
-                    notify.send(request.user, recipient=obj.user, verb='liked your post', action_object=obj)
-            updated = True
-        data = {
-            "updated": updated,
-            "liked": liked,
-            "like_count": obj.likes.count()
-        }
-        return Response(data)
+ 

@@ -11,6 +11,7 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Customer Name</th>
+            <th scope="col">Student Number</th>
             <th scope="col">Ref Code</th>
             <th scope="col">Date</th>
             <th scope="col">Being Delivered</th>
@@ -23,8 +24,9 @@
         <tr>
             <th scope="row">{{ forloop.counter }}</th>
             <td style="font-size:1rem; font-weight:400;">{{ order_item.user.username }}</td>
+            <td style="font-size:1rem; font-weight:400;">{{order_item.shipping_address.student_number}}</td>
             <td style="font-size:1rem; font-weight:400;">
-                <a href="{% url 'core:order-detail' order_item.ref_code %}">{{ order_item.ref_code }}</a>
+                <a href="{% url 'core:order-detail' order_item.ref_code %}" style="text-decoration: underline; color:blue;" >{{ order_item.ref_code }}</a>
             </td>
             <td style="font-size:1rem; font-weight:400;">
                 {{ order_item.start_date }}                
@@ -51,7 +53,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan='7' style="font-size:1rem; font-weight:400;">No Orders Have Been Made</td>
+            <td colspan='8' style="font-size:1rem; font-weight:400;">No Orders Have Been Made</td>
         </tr>
 
         {% endfor %}
@@ -62,7 +64,7 @@
         </tr>
         {% endif %} {% endcomment %}
         {% comment %} <tr>
-            <td colspan="7">
+            <td colspan="8">
             <a class='btn btn-outline-primary float-right' href='/'>Continue shopping</a>
             </td>
         </tr>  {% endcomment %}

@@ -35,7 +35,7 @@ RESIDENCE_CHOICE = (
 
 PAYMENT_CHOICES = (
     ('Card', 'Card Payment'),
-    ('Cash', 'Cash On Delivery')
+    # ('Cash', 'Cash On Delivery')
 )
 
 ADDRESS_CHOICES = (
@@ -169,4 +169,4 @@ class Order(models.Model):
         total = 0
         for order_item in self.item.all():
             total += order_item.get_final_price()
-        return total
+        return round(total,2)

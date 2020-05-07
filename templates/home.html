@@ -116,7 +116,11 @@
           </form>
         </div>
         <!-- Collapsible content -->
-
+        {% if request.user.is_superuser %}
+          {% load webpush_notifications %}
+          {% webpush_header %}
+          {% webpush_button with_class="btn btn-outline-info" %}
+        {% endif %}
       </nav>
       <!--/.Navbar-->
 
@@ -169,11 +173,15 @@
                   </strong>
                 </h5>
                 <hr>
+                {%if request.user.is_authenticated%}
                 {%if item in cart%}
                   <a class="btn cart-btn btn-outline-danger btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Remove From Cart</a>
                 {%else%}
                   <a class="btn cart-btn btn-outline-primary btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Add To Cart</a>
                 {% endif %}
+                {%else%}
+                  <a href="{% url 'account_login'%}" class="btn btn-outline-primary btn-sm">Login To Add To Cart</a>
+                {%endif%}
               </div>
               <!--Card content-->
 

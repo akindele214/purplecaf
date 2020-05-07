@@ -65,8 +65,9 @@
     <a class="navbar-brand" href="/">PurpleCAF</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
+    {% if request.user.is_authenticated %}
     <span class="badge cart_ rd"> {{ request.user|cart_item_count }} </span>
-    
+    {%endif%}
     {% comment %} {%if request.user.is_authenticated %}
     {% live_notify_badge as count %}
     

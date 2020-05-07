@@ -6,13 +6,81 @@
 
   <main >
     <div class="container wow fadeIn">
-      <h2 class="mt-2 h2 text-center">Order Detail</h2>
+      <h3 class="mt-2 mb-3 h3 text-center">Order Detail</h3>
       <div class="row">
-        <div class="col-md-12 mb-4">
+          <div class="col-md-4 mb-4">
+            <!-- Heading -->
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-muted">Order Item</span>
+              <span class="badge badge-secondary badge-pill">{{ length }}</span>
+            </h4>        
+            <!-- Cart -->
+            <ul class="list-group mb-3 z-depth-1">
+              {% for order_item in order_ %}
+              <li class="list-group-item d-flex justify-content-between lh-condensed">
+                <div>
+                  <a href="{% url 'core:product' order_item.item.slug %}"><h6 class="my-0">{{ order_item.quantity }} x {{ order_item.item.title}}</h6></a>
+                  <small class="text-muted">{{ order_item.item.description|truncatewords:20}}</small>
+                </div>
+                <span class="text-muted">R{{ order_item.get_final_price }}</span>
+              </li>
+              {% endfor %}
+              {% if order.coupon %}
+              <li class="list-group-item d-flex justify-content-between bg-light">
+                <div class="text-success">
+                  <h6 class="my-0">Promo code</h6>
+                  <small>{{ order.coupon.code }}</small>
+                </div>
+                <span class="text-success">-R{{order.coupon.amount}}</span>
+              </li>
+              {% endif %}
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Total (ZAR)</span>
+                <strong>R{{ object.get_total }}</strong>
+              </li>
+            </ul>
+            <!-- Cart -->
+        
+        
+            {% comment %} <!-- Promo code -->
+            {% if DISPLAY_COUPON_FORM %}
+            <form method="POST" action="{% url 'core:add-coupon'%}" class="card p-2">
+                {%csrf_token%}
+            <div class="input-group">
+        
+                <!-- <input type="text" class="form-control" placeholder="Promo code" aria-label="Recipient's username" aria-describedby="basic-addon2"> -->
+                {{ couponform.code }}
+                <div class="input-group-append">
+                <button class="btn btn-secondary btn-md waves-effect m-0" type="submit">Redeem</button>
+                </div>
+            </div>
+            </form>
+            {% endif %}
+            <!-- Promo code --> {% endcomment %}
+        
+          </div>
+
+          <div class="col-md-8 mb-4">
           <div class="card">
             <div class="card-body">
               {% csrf_token %}
+              <h3>Delivery Option</h3>
+              <div class="d-block my-3">
+                {% if object.delivery_option == 'PU' %}
+                  <div class="custom-control custom-radio">
+                    <input id="PU" name="delivery_option" value="PU" type="radio" class="custom-control-input" checked>
+                    <label class="custom-control-label" for="PU">Pick Up At Caf</label>
+                  </div>                
+                {% elif object.delivery_option == 'RD'%}
+                  <div class="custom-control custom-radio">
+                    <input id="RD" name="delivery_option" value="RD" type="radio" class="custom-control-input" checked>
+                    <label class="custom-control-label" for="RD">Residence Delivery</label>
+                  </div>                
+                {% endif %}
+              </div>
 
+              <hr class="mb-4">
+              {% if object.delivery_option == 'RD'%}
               <h3>Delivery address</h3>
 
               <div class='hideable_shipping_form'>
@@ -48,7 +116,8 @@
                 </div> {% endcomment %}
 
               </div>
-
+              <hr>
+              {%endif%}
               {% comment %} {% if default_shipping_address %}
               <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" name="use_default_shipping" id="use_default_shipping">
@@ -102,8 +171,6 @@
                 <label class="custom-control-label" for="use_default_billing">Use default billing address: {{ default_billing_address.street_address|truncatechars:20 }}</label>
               </div>
               {% endif %} {% endcomment %}
-              <hr>
-
               <h3>Payment option</h3>
 
               <div class="d-block my-3">
@@ -136,57 +203,7 @@
 
         </div>
 
-          <div class="col-md-12 mb-4">
-            <!-- Heading -->
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-              <span class="text-muted">Order Item</span>
-              <span class="badge badge-secondary badge-pill">{{ length }}</span>
-            </h4>        
-            <!-- Cart -->
-            <ul class="list-group mb-3 z-depth-1">
-              {% for order_item in order_ %}
-              <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <div>
-                  <a href="{% url 'core:product' order_item.item.slug %}"><h6 class="my-0">{{ order_item.quantity }} x {{ order_item.item.title}}</h6></a>
-                  <small class="text-muted">{{ order_item.item.description|truncatewords:20}}</small>
-                </div>
-                <span class="text-muted">R{{ order_item.get_final_price }}</span>
-              </li>
-              {% endfor %}
-              {% if order.coupon %}
-              <li class="list-group-item d-flex justify-content-between bg-light">
-                <div class="text-success">
-                  <h6 class="my-0">Promo code</h6>
-                  <small>{{ order.coupon.code }}</small>
-                </div>
-                <span class="text-success">-R{{order.coupon.amount}}</span>
-              </li>
-              {% endif %}
-              <li class="list-group-item d-flex justify-content-between">
-                <span>Total (ZAR)</span>
-                <strong>R{{ object.get_total }}</strong>
-              </li>
-            </ul>
-            <!-- Cart -->
-        
-        
-            {% comment %} <!-- Promo code -->
-            {% if DISPLAY_COUPON_FORM %}
-            <form method="POST" action="{% url 'core:add-coupon'%}" class="card p-2">
-                {%csrf_token%}
-            <div class="input-group">
-        
-                <!-- <input type="text" class="form-control" placeholder="Promo code" aria-label="Recipient's username" aria-describedby="basic-addon2"> -->
-                {{ couponform.code }}
-                <div class="input-group-append">
-                <button class="btn btn-secondary btn-md waves-effect m-0" type="submit">Redeem</button>
-                </div>
-            </div>
-            </form>
-            {% endif %}
-            <!-- Promo code --> {% endcomment %}
-        
-          </div>
+
 
 
       </div>
