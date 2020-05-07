@@ -161,6 +161,7 @@ class Order(models.Model):
     delivery_option = models.CharField(max_length=2, choices=DELIVERY_CHOICE, blank=True, null=True)
     being_delivered = models.BooleanField(default=False)
     received = models.BooleanField(default=False)
+    student_number = models.CharField(max_length=8, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} {self.get_total()}"

@@ -12,12 +12,12 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from webpush import send_user_notification
 
 # Create your views here.
 from .models import Item, Images, Order, OrderItem, Address, Payment
-from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm
+from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm
 from django.forms import modelformset_factory
 
 # REST FRAMEWORK
@@ -27,6 +27,13 @@ from rest_framework import authentication, permissions
 
 
 def is_valid_form(values):
+    valid = True
+    for field in values:
+        if field == '':
+            valid = False
+    return valid
+
+def is_idform_valid(values):
     valid = True
     for field in values:
         if field == '':
@@ -88,12 +95,10 @@ class AddItemView(UserPassesTestMixin, View):
                 post.save()
 
                 for f in formset:
-                    print(f.cleaned_data)
                     try:
                         photo = Images(item=post, image=f.cleaned_data['image'])
                         photo.save()
                     except Exception as e:
-                        print(e, 'Error occurred')
                         pass
                 return redirect('core:home')
         else:
@@ -127,16 +132,13 @@ class ItemDetailView(DetailView):
         request = self.request
         if request.user.is_authenticated:
             item = get_object_or_404(Item, slug=slug)
-            # form = CartForm(self.request.POST or None)
             if request.method == 'POST':
                 # size = form.cleaned_data.get('size')
                 order_item, created = OrderItem.objects.get_or_create(item=item, 
                                         user=request.user, ordered=False)
-                # print(dir(order_item), 501)
                 order_qs = Order.objects.filter(user__exact=request.user, ordered=False)            
                 if order_qs.exists():
                     order = order_qs[0]
-                    print((order.item.all()), 505)
                     if order_item in order.item.all():
                         order_item.quantity += 1
                         order_item.save()
@@ -219,7 +221,6 @@ def add_to_cart(request, slug):
     else:
         order_date = timezone.now()
         ref = create_ref_code()
-        print(ref)
         order = Order.objects.create(user=request.user, ordered_date=order_date, ref_code=ref)
         order.item.add(order_item)
         messages.info(request, "This item was added to your cart.")
@@ -369,8 +370,10 @@ class CheckOutView(LoginRequiredMixin, View):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)    
             form = CheckoutForm()
+            idform = IDForm()
             context = {
                 'form': form,
+                'idform': idform,
                 'couponform': CouponForm(),
                 'order': order,
                 'DISPLAY_COUPON_FORM': False,
@@ -390,16 +393,15 @@ class CheckOutView(LoginRequiredMixin, View):
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
+        idform = IDForm(self.request.POST or None)
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
-            if form.is_valid():
+            if form.is_valid() and idform.is_valid():
                 use_default_shipping = form.cleaned_data.get(
                     'use_default_shipping')
                 delivery_option = form.cleaned_data.get('delivery_option')
-                print(delivery_option)
                 if delivery_option == 'RD':
                     if use_default_shipping:
-                        print("Using the defualt shipping address")
                         address_qs = Address.objects.filter(
                             user=self.request.user,
                             address_type='S',
@@ -438,6 +440,7 @@ class CheckOutView(LoginRequiredMixin, View):
 
                             order.shipping_address = shipping_address
                             order.delivery_option = delivery_option
+                            order.student_number = student_number
                             order.save()
 
                             set_default_shipping = form.cleaned_data.get(
@@ -448,12 +451,19 @@ class CheckOutView(LoginRequiredMixin, View):
 
                         else:
                             messages.info(
-                                self.request, "Please fill in the required shipping address fields")
+                                self.request, "Please fill in the required delivery address fields")
+                            return redirect('core:checkout')
 
                 elif delivery_option == 'PU':
-                    order.delivery_option = delivery_option
-                    order.save()
-
+                    id_ = idform.cleaned_data.get('idform')
+                    if is_idform_valid([id_]):
+                        order.delivery_option = delivery_option
+                        order.student_number = id_
+                        order.save()
+                    else:
+                        messages.info(self.request, "Please fill in the required student/id number field if you'll like to pick up your order at the caf")
+                        # return render(self.request, 'cash_checkout.html')
+                        return redirect('core:checkout')
 
                 payment_option = form.cleaned_data.get('payment_option')
                 if payment_option == 'Card':
@@ -465,6 +475,9 @@ class CheckOutView(LoginRequiredMixin, View):
                     messages.warning(
                         self.request, "Invalid payment option selected")
                     return redirect('core:checkout')
+            else:
+                messages.info(self.request, 'Please fill in required fields')
+                return redirect('core:checkout')
         except ObjectDoesNotExist:
             messages.warning(self.request, "You do not have an active order")
             return redirect("core:order-summary")
@@ -488,7 +501,6 @@ class CashPaymentView(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         payment_option  = self.kwargs['payment_option']
-        print("Cash Payment", payment_option)
         amount = int(order.get_total() * 100)
         
         try:
@@ -520,7 +532,6 @@ class CashPaymentView(LoginRequiredMixin, View):
 
         except Exception as e:
             # send an email to ourselves
-            print(e)
             messages.warning(
                 self.request, "A serious error occurred. We have been notifed.")
             return redirect("/")
@@ -603,11 +614,8 @@ class OrderListView(UserPassesTestMixin, ListView):
 class ProcessPaymentView(LoginRequiredMixin, View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        print(request.method)
         if request.method == 'POST':
             form = request.POST.dict()
-            print(request.user)
-            print(self.request.user)
             m_paymemt_id = form['m_payment_id']
             pf = form['pf_payment_id']
             item_name = form['item_name']
@@ -623,7 +631,6 @@ class ProcessPaymentView(LoginRequiredMixin, View):
             res = requests.post('https://sandbox.payfast.co.za/eng/query/validate'
                                 , data={'pf_payment_id': pf, 'signature':signature,
                                         'merchant_id': MID, })
-            print(res.text)
             if res.text == 'VALID':
                 # create the payment
                 user = User.objects.get(email=email)
@@ -647,12 +654,9 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://005103d6.ngrok.io/order/{item_name}/"}
-                # payload = {"head": "Welcome!", "body": "Hello World"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"http://9c4ed0cf.ngrok.io/order/{item_name}/"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
-                print(dir(send_user_notification))
-                messages.success(self.request, 'Payment Successful')
-                
+                messages.success(self.request, 'Payment Successful')                
                 return render(self.request, 'home.html')
             else:
                 messages.warning(self.request, 'Payment Unsuccessful')
@@ -661,7 +665,6 @@ class ProcessPaymentView(LoginRequiredMixin, View):
 
     def post(self, *args, **kwargs):
         request = self.request
-        print(self.request)
         if request.method == 'POST':
             m_paymemt_id = request.form['m_payment_id']
             pf = request.form['pf_payment_id']
@@ -677,7 +680,6 @@ class ProcessPaymentView(LoginRequiredMixin, View):
             res = requests.post('https://sandbox.payfast.co.za/eng/query/validate'
                                 , data={'pf_payment_id': pf, 'signature':signature,
                                         'merchant_id': MID, })
-            print(res.text)
             if res.text == 'VALID':
                 # create the payment
                 payment = Payment()
@@ -754,7 +756,6 @@ def add_to_cart_json(request, slug):
     order_qs = Order.objects.filter(user=request.user, ordered=False)
     cart = False
     count = 0
-    print(slug)
     if order_qs.exists():
         order = order_qs[0]
         if order.item.filter(item__slug=item.slug).exists():

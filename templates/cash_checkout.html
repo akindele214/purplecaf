@@ -26,8 +26,6 @@
 
               <hr>
 
-
-
               <div class='hideable_shipping_form'>
               <h3 class="mb-2">Delivery Address</h3>
                 <div class="md-form mb-4">
@@ -80,6 +78,16 @@
                 <label class="custom-control-label" for="use_default_shipping">Use default delivery address: {{ default_shipping_address.get_residence_name_display|truncatechars:10 }} {{default_shipping_address.cell_phone|truncatechars:10}}</label>
               </div>
               {% endif %}
+
+              <div class='id_form'>
+              <hr>
+              <h3 class="mb-2">Cafeteria PickUp</h3>
+                <div class="md-form mb-4">
+                  <input type='text' maxlength="8" placeholder='' id='idform' name='idform' class='form-control'/>
+                  <label for="idform" class="">Student/ID Number</label>
+                </div>
+              </div>
+
 
               {% comment %} <h3>Billing address</h3>
               <div class='hideable_billing_form'>
@@ -163,6 +171,7 @@
   var hideable_shipping_form = $('.hideable_shipping_form');
   var hideable_billing_form = $('.hideable_billing_form');
   var hideable_default_res_form = $('.choose_res');
+  var hideable_idform = $('.id_form');
 
   var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
   var use_default_billing = document.querySelector("input[name=use_default_billing]");
@@ -174,6 +183,7 @@
     if (this.checked) {
       hideable_shipping_form.hide();
       hideable_default_res_form.hide();
+      hideable_idform.show();
     } else {
       hideable_shipping_form.show();
       hideable_default_res_form.show()
@@ -184,9 +194,11 @@
     if (this.checked) {
       hideable_shipping_form.show();
       hideable_default_res_form.show();
+      hideable_idform.hide();
     } else {
       hideable_shipping_form.hide();
       hideable_default_res_form.hide();
+      hideable_idform.hide();
     }
   })
 

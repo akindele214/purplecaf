@@ -11,7 +11,7 @@
         <tr>
             <th scope="col">#</th>
             <th scope="col">Customer Name</th>
-            <th scope="col">Student Number</th>
+            <th scope="col">ID Number</th>
             <th scope="col">Ref Code</th>
             <th scope="col">Date</th>
             <th scope="col">Being Delivered</th>
@@ -24,7 +24,13 @@
         <tr>
             <th scope="row">{{ forloop.counter }}</th>
             <td style="font-size:1rem; font-weight:400;">{{ order_item.user.username }}</td>
-            <td style="font-size:1rem; font-weight:400;">{{order_item.shipping_address.student_number}}</td>
+            <td style="font-size:1rem; font-weight:400;">
+                {% if order_item.delivery_option == 'RD' %}
+                    {{order_item.shipping_address.student_number}}
+                {% elif order_item.delivery_option == 'PU' %}
+                    {{ order_item.student_number}}
+                {% endif %}
+            </td>
             <td style="font-size:1rem; font-weight:400;">
                 <a href="{% url 'core:order-detail' order_item.ref_code %}" style="text-decoration: underline; color:blue;" >{{ order_item.ref_code }}</a>
             </td>
@@ -32,13 +38,20 @@
                 {{ order_item.start_date }}                
             </td>
             <td  style="font-size:1rem; font-weight:400;"> 
-                {{order_item.being_delivered}}</td>
-            
+                {%if order_item.being_delivered%}
+                <i class="fas fa-check"></i>
+                {%else%}
+                <i class="far fa-window-close"></i>
+                {%endif%}
             </td>
 
             <td  style="font-size:1rem; font-weight:400;"> 
-                {{order_item.received}}</td>
-            
+                {% comment %} {{order_item.received}} {% endcomment %}
+                {%if order_item.received%}
+                <i class="fas fa-check"></i>
+                {%else%}
+                <i class="far fa-window-close"></i>
+                {%endif%}
             </td>
                 
             <td style="font-size:1rem; font-weight:400;">

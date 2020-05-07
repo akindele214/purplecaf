@@ -116,6 +116,14 @@ class RefundForm(forms.Form):
     }))
     email = forms.EmailField()
 
+class IDForm(forms.Form):
+    idform = forms.CharField(widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Enter Student/ID Number',
+        'aria-label': 'Recipient\'s username',
+        'aria-describedby': 'basic-addon2'
+    }))
+
 
 class ItemCreateForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea(attrs={
