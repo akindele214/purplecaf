@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from webpush import send_user_notification
+#from django.contrib.gis.utils import GeoIP
 
 # Create your views here.
 from .models import Item, Images, Order, OrderItem, Address, Payment
@@ -476,6 +477,7 @@ class CheckOutView(LoginRequiredMixin, View):
                         self.request, "Invalid payment option selected")
                     return redirect('core:checkout')
             else:
+                print("Invalid")
                 messages.info(self.request, 'Please fill in required fields')
                 return redirect('core:checkout')
         except ObjectDoesNotExist:
@@ -654,7 +656,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"http://9c4ed0cf.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://f09a24ad.ngrok.io/order/{item_name}/"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful')                
                 return render(self.request, 'home.html')
