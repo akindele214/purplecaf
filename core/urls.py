@@ -5,13 +5,14 @@ from .views import (products, AddItemView, ItemDetailView,
                     add_single_item_from_cart, add_to_cart, add_to_cart_json, CategoryListView, delete_from_cart,
                     OrderSummaryView, HomeView, CheckOutView, CashPaymentView, ProfileSummaryView,
                     OrderListView, OrderDetailView, CardPaymentView,
-                    ProcessPaymentView, CardPaymentCancelView, CardPaymentSucessView)
+                    ProcessPaymentView, CardPaymentCancelView, CardPaymentSucessView, SearchView)
 
 app_name = 'core'
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
     path('checkout/', CheckOutView.as_view(), name='checkout'),
+    path('search/', SearchView.as_view(), name='search'),
     path('add-item/', AddItemView.as_view(), name='add-item'),
     path('item-detail/<slug>/', ItemDetailView.as_view(), name="product"),
     path('edit-item/<slug>/', EditItemView.as_view(), name="edit-item"),

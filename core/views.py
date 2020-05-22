@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 import random
 import string, json
 import requests
+from itertools import chain
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -18,7 +19,7 @@ from webpush import send_user_notification
 
 # Create your views here.
 from .models import Item, Images, Order, OrderItem, Address, Payment
-from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm
+from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm, SearchForm
 from django.forms import modelformset_factory
 
 # REST FRAMEWORK
@@ -67,9 +68,41 @@ class HomeView(ListView):
                 order = order[0]
                 for i in order.item.all():
                     item.append(i.item)
-        context['cart'] = item
-        
-        return context        
+        context['cart'] = item        
+        return context  
+
+class SearchView(ListView): 
+    model = Item
+    template_name = 'home.html'
+    paginate_by = 12
+    ordering = ['pk']
+
+    def get_context_data(self, *args, **kwargs):
+        prod_ = Item.objects.all().order_by('pk')
+        item = []
+        context = super().get_context_data(*args, **kwargs)
+        if self.request.user.is_authenticated:
+            order = Order.objects.filter(user=self.request.user, ordered=False)
+            if order.exists():
+                order = order[0]
+                for i in order.item.all():
+                    item.append(i.item)
+        context['cart'] = item        
+        return context  
+
+    def get_queryset(self):
+        request = self.request
+        query = request.GET.get('q', None)
+        print(query)
+        if len(query) > 2:
+            blog_results = Item.objects.filter(title__icontains=query)
+            queryset_chain = chain(blog_results)
+            qs = sorted(queryset_chain, key=lambda instance: instance.pk,
+                        reverse=True)
+            return qs
+        return Item.objects.none() 
+
+
 
 class AddItemView(UserPassesTestMixin, View):
     
@@ -162,7 +195,6 @@ class ItemDetailView(DetailView):
         else:
             messages.info(request, "You need to be signed in")
             redirect("account_login")
-
 
 class EditItemView(UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
@@ -412,6 +444,7 @@ class CheckOutView(LoginRequiredMixin, View):
                             shipping_address = address_qs[0]
                             order.delivery_option = delivery_option
                             order.shipping_address = shipping_address
+                            order.service_charge = 10
                             order.save()
                         else:
                             messages.info(
@@ -442,6 +475,7 @@ class CheckOutView(LoginRequiredMixin, View):
                             order.shipping_address = shipping_address
                             order.delivery_option = delivery_option
                             order.student_number = student_number
+                            order.service_charge = 10
                             order.save()
 
                             set_default_shipping = form.cleaned_data.get(
@@ -460,6 +494,7 @@ class CheckOutView(LoginRequiredMixin, View):
                     if is_idform_valid([id_]):
                         order.delivery_option = delivery_option
                         order.student_number = id_
+                        order.service_charge = 5
                         order.save()
                     else:
                         messages.info(self.request, "Please fill in the required student/id number field if you'll like to pick up your order at the caf")
@@ -597,19 +632,38 @@ class OrderDetailView(UserPassesTestMixin, View):
         return self.request.user.is_staff or self.request.user.is_superuser
 
 
-class OrderListView(UserPassesTestMixin, ListView):
+class OrderListView(UserPassesTestMixin, View):
     def get(self, *args, **kwargs):
         try:
+            form = SearchForm()
             order = Order.objects.filter(ordered=True).order_by('-pk')
             context = {
-                'object': order
+                'object': order,
+                'form': form
             }
             return render(self.request, 'order.html', context)
 
         except ObjectDoesNotExist:
             messages.warning(self.request, "No Orders Have Been Made")
             return redirect("/")
-    
+
+    def post(self, *args, **kwargs):
+        if self.request.method == 'POST':
+            form = SearchForm(self.request.POST, self.request.FILES or None)
+            print(dir(form))
+            ID = form['searchfield'].data
+            print(ID)
+            order = Order.objects.filter(ordered=True, student_number=ID).order_by('-pk')
+            context = {
+                'object': order,
+                'form': form,
+            }
+            return render(self.request, 'order.html', context)
+        else:
+            messages.warning(self.request, "Invalid Request")
+            return redirect('/')
+
+
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
 

@@ -45,8 +45,8 @@ ADDRESS_CHOICES = (
 )
 
 DELIVERY_CHOICE = (
-    ('RD', 'Residence Delivery'),
-    ('PU', 'Pick Up At Cafeteria')
+    ('RD', 'Residence Delivery + R10'),
+    ('PU', 'Pick Up At Cafeteria + R5')
 )
 
 
@@ -162,6 +162,7 @@ class Order(models.Model):
     being_delivered = models.BooleanField(default=False)
     received = models.BooleanField(default=False)
     student_number = models.CharField(max_length=8, blank=True, null=True)
+    service_charge = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.username} {self.get_total()}"
@@ -169,5 +170,13 @@ class Order(models.Model):
     def get_total(self):
         total = 0
         for order_item in self.item.all():
-            total += order_item.get_final_price()
+            total += order_item.get_final_price() 
+        
         return round(total,2)
+    
+    def get_total_quote(self):
+        total = 0
+        for order_item in self.item.all():
+            total += order_item.get_final_price() 
+        
+        return round(total + self.service_charge,2)

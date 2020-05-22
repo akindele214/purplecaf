@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% block head_title %}Orders {{block.super}}{%endblock%}
 {% block content %}
   <main>
@@ -6,6 +7,12 @@
 
     <div class="table-responsive text-nowrap">
     <h2>Orders Made</h2>
+    <form class="form-inline" METHOD ="POST">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {% comment %} <input class="form-control mr-sm-1 " type="search" placeholder="Search Order By ID Number" aria-label="Search" name="q" required> {% endcomment %}
+        <button class="btn btn-outline-info btn-sm my-2 my-sm-0" type="submit"><i class="fas fa-search fa-1x"></i></button>
+    </form>
     <table class="table">
         <thead>
         <tr>

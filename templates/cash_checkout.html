@@ -167,16 +167,21 @@
 {% endblock content %}
 
 {% block extra_scripts %}
-<script>
+<script type="text/javascript" >
+  var total_order = {{order.get_total}}
   var hideable_shipping_form = $('.hideable_shipping_form');
   var hideable_billing_form = $('.hideable_billing_form');
   var hideable_default_res_form = $('.choose_res');
   var hideable_idform = $('.id_form');
+  var sc = document.getElementById('service_charge');
+  var total = document.getElementById('total');
 
+  console.log(sc.innerText)
+  console.log(total.innerText)
   var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
   var use_default_billing = document.querySelector("input[name=use_default_billing]");
-  var pickup_order = document.querySelector("input[id='Pick Up At Cafeteria']");
-  var res_delivery = document.querySelector("input[id='Residence Delivery']")
+  var pickup_order = document.querySelector("input[id='Pick Up At Cafeteria + R5']");
+  var res_delivery = document.querySelector("input[id='Residence Delivery + R10']")
 
 
   pickup_order.addEventListener('change', function() {
@@ -184,6 +189,8 @@
       hideable_shipping_form.hide();
       hideable_default_res_form.hide();
       hideable_idform.show();
+      sc.innerHTML = "R5"
+      total.innerText = "R" + (total_order+5.0)
     } else {
       hideable_shipping_form.show();
       hideable_default_res_form.show()
@@ -195,6 +202,9 @@
       hideable_shipping_form.show();
       hideable_default_res_form.show();
       hideable_idform.hide();
+      
+      sc.innerHTML = "R10"
+      total.innerText = "R" + (total_order+10.0)
     } else {
       hideable_shipping_form.hide();
       hideable_default_res_form.hide();

@@ -35,8 +35,8 @@ RESIDENCE_CHOICE = (
 )
 
 DELIVERY_CHOICE = (
-    ('RD', 'Residence Delivery'),
-    ('PU', 'Pick Up At Cafeteria')
+    ('RD', 'Residence Delivery + R10'),
+    ('PU', 'Pick Up At Cafeteria + R5')
 )
 
 
@@ -125,6 +125,11 @@ class IDForm(forms.Form):
     #     'aria-describedby': 'basic-addon2'
     # }))
 
+class SearchForm(forms.Form):
+    searchfield = forms.CharField(required=True, label='', widget=forms.TextInput(attrs={
+        'placeholder': 'Search By Student ID',
+        'class': 'form-control',
+    }))
 
 class ItemCreateForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea(attrs={

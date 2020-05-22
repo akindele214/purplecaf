@@ -115,21 +115,21 @@
             <div class="text-center">
               <li class="list-group-item d-flex justify-content-between">
                 <span>Total (ZAR)</span>
-                <strong>R{{ order.get_total }}</strong>
+                <strong>R{{ order.get_total_quote }}</strong>
               </li>
             </div>
             <form class="mt-4" action="https://sandbox.payfast.co.za/eng/process" method="POST" id="myform">
               <input type="hidden" name="merchant_id" value="10017256">
               <input type="hidden" name="merchant_key" value="1pnlssv0d8k7d">
-              <input type="hidden" name="return_url" value="https://f09a24ad.ngrok.io/paymentsuccess/">
-              <input type="hidden" name="cancel_url" value="https://f09a24ad.ngrok.io/cancelpayment/">
-              <input type="hidden" name="notify_url" value="https://f09a24ad.ngrok.io/processpayment/">        
+              <input type="hidden" name="return_url" value="https://5edd789a.ngrok.io/paymentsuccess/">
+              <input type="hidden" name="cancel_url" value="https://5edd789a.ngrok.io/cancelpayment/">
+              <input type="hidden" name="notify_url" value="https://5edd789a.ngrok.io/processpayment/">        
               <input type="hidden" name="email_address" value="{{user.email}}">
-              <input type="hidden" name="amount" value="{{ order.get_total }}">
+              <input type="hidden" name="amount" value="{{ order.get_total_quote }}">
               <input type="hidden" name="item_name" value="{{ order.ref_code }}">
               <input type="hidden" name="email_confirmation" value="1">
               <input type="hidden" name="confirmation_address" value="{{user.email}}">
-              <input type="hidden" name="payment_method" value="eft">
+              <input type="hidden" name="payment_method" value="card">
               <!-- <input type="submit" value="Submit"> -->
               <a type="submit" onclick="document.getElementById('myform').submit()">
                 <img src="https://www.payfast.co.za/images/buttons/light-small-paynow.png" width="165"

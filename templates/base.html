@@ -14,7 +14,8 @@
   <link href="{% static 'css/style.min.css' %}" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-
+  <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+  
   <style type="text/css">
     html,
     body{
@@ -67,12 +68,13 @@
     {% block extra_body %}
     {% endblock %}
 
+    {% block extra_scripts %}
+
+    {% endblock extra_scripts %}
+    
     {% include "footer.html" %}
     {% include "scripts.html" %}
 
-    {% block extra_scripts %}
-
-    {% endblock %}
     <script>
       $(".alert").delay(10000).slideUp(200, function() {
         $(this).alert('close');
