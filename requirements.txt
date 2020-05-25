@@ -6,7 +6,7 @@ chardet==3.0.4
 cryptography==2.9.2
 decouple==0.0.7
 defusedxml==0.6.0
-Django==2.2
+Django==2.2.12
 django-allauth==0.39.1
 django-countries==5.3.3
 django-crispy-forms==1.7.2
@@ -23,7 +23,7 @@ jsonfield==3.1.0
 new-package==0.0.1
 oauthlib==3.0.1
 pep8==1.7.1
-Pillow==6.0.0
+Pillow==7.1.2
 py-vapid==1.7.0
 pycodestyle==2.5.0
 pycparser==2.20
