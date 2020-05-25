@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block head_title %}View Voucher Account {{block.super}}{%endblock%}
+{% load crispy_forms_tags %}
+
+{% block extra_head %}
+
+{% endblock extra_head %}
+
+{% block content %}
+
+    <main >
+    <div class="container wow fadeIn mt-5">
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <!-- Heading -->
+            <h4 class="d-flex justify-content-between align-items-center mb-3 text-center">
+              <span class="text-muted">Load Voucher</span>
+            </h4>        
+            <!-- Cart -->
+            <ul class="list-group mb-3 z-depth-1">
+
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Available Balance (ZAR)</span>
+                <strong>R{{ voucher_account.amount }}</strong>
+              </li>
+                {% comment %} <form method="POST" class="form-inline text-center">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Submit</button>
+                </form> {% endcomment %}
+            </ul>        
+          </div>
+
+          <div class="col-md-8 mb-4">
+            <div class="table-responsive text-nowrap">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Customer Name</th>
+                        <th scope="col">ID Number</th>
+                        <th scope="col">Ref Code</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Being Delivered</th>
+                        <th scope="col">Delivered</th>
+                        <th scope="col">Total Item Price</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order_item in order %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td style="font-size:1rem; font-weight:400;">{{ order_item.user.username }}</td>
+                        <td style="font-size:1rem; font-weight:400;">
+                            {% if order_item.delivery_option == 'RD' %}
+                                {{order_item.shipping_address.student_number}}
+                            {% elif order_item.delivery_option == 'PU' %}
+                                {{ order_item.student_number}}
+                            {% endif %}
+                        </td>
+                        <td style="font-size:1rem; font-weight:400;">
+                            <a href="{% url 'core:order-detail' order_item.ref_code %}" style="text-decoration: underline; color:blue;" >{{ order_item.ref_code }}</a>
+                        </td>
+                        <td style="font-size:1rem; font-weight:400;">
+                            {{ order_item.start_date }}                
+                        </td>
+                        <td  style="font-size:1rem; font-weight:400;"> 
+                            {%if order_item.being_delivered%}
+                            <i class="fas fa-check"></i>
+                            {%else%}
+                            <i class="far fa-window-close"></i>
+                            {%endif%}
+                        </td>
+
+                        <td  style="font-size:1rem; font-weight:400;"> 
+                            {%if order_item.received%}
+                            <i class="fas fa-check"></i>
+                            {%else%}
+                            <i class="far fa-window-close"></i>
+                            {%endif%}
+                        </td>
+                            
+                        <td style="font-size:1rem; font-weight:400;">
+                            R{{order_item.get_total}}
+                        </td>            
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan='8' style="font-size:1rem; font-weight:400;">You have not made any order</td>
+                    </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+{% endblock content %}
+

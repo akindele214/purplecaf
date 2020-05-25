@@ -7,7 +7,7 @@ from django.forms import ModelForm
 
 PAYMENT_CHOICES = (
     ('Card', 'Card Payment'),
-    # ('Cash', 'Cash On Delivery')
+    ('Voucher', 'PurpleCAF Voucher')
 )
 
 SIZE_CHOICES = (
@@ -167,3 +167,10 @@ class OrderDetailForm(forms.ModelForm):
         fields = ('being_delivered','received',)
         # being_delivered = forms.BooleanField(required=False) 
         # delivered = forms.BooleanField(required=False)
+
+class VoucherForm(forms.Form):
+    amount = forms.IntegerField(required=True, label='', widget=forms.TextInput(attrs={
+        'placeholder': 'Enter Amount',
+        'class': 'form-control text-center',
+    }))
+

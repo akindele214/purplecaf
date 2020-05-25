@@ -35,7 +35,7 @@ RESIDENCE_CHOICE = (
 
 PAYMENT_CHOICES = (
     ('Card', 'Card Payment'),
-    # ('Cash', 'Cash On Delivery')
+    ('Voucher', 'PurpleCAF Voucher')
 )
 
 ADDRESS_CHOICES = (
@@ -89,8 +89,12 @@ class Images(models.Model):
     def __str__(self):
         return f'{self.item.title} - {self.item.price}'
 
-class Voucher(models.Model):
-    pass
+class VoucherAccount(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user} - {self.amount}'
 
 
 class Address(models.Model):
@@ -117,7 +121,7 @@ class Payment(models.Model):
     amount_fee = models.CharField(max_length=20,blank=True, null=True)
     amount_net = models.CharField(max_length=20,blank=True, null=True)
     signature = models.CharField(max_length=50, blank=True, null=True)
-    payment_option = models.CharField(max_length=5, choices=PAYMENT_CHOICES)
+    payment_option = models.CharField(max_length=8, choices=PAYMENT_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

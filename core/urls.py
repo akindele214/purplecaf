@@ -5,7 +5,8 @@ from .views import (products, AddItemView, ItemDetailView,
                     add_single_item_from_cart, add_to_cart, add_to_cart_json, CategoryListView, delete_from_cart,
                     OrderSummaryView, HomeView, CheckOutView, CashPaymentView, ProfileSummaryView,
                     OrderListView, OrderDetailView, CardPaymentView,
-                    ProcessPaymentView, CardPaymentCancelView, CardPaymentSucessView, SearchView)
+                    ProcessPaymentView, CardPaymentCancelView, CardPaymentSucessView, SearchView
+                    , AddVoucher, ViewVoucherAccount, SearchVoucher, VoucherPaymentView, ViewVoucherAccount)
 
 app_name = 'core'
 
@@ -13,6 +14,10 @@ urlpatterns = [
     path('', HomeView.as_view(), name='home'),
     path('checkout/', CheckOutView.as_view(), name='checkout'),
     path('search/', SearchView.as_view(), name='search'),
+    path('search-v/', SearchVoucher.as_view(), name="search-voucher"),
+    path('loadvoucher/<str:username>', AddVoucher.as_view(), name='load-voucher'),
+    # path('voucher/', ViewVoucherAccount.as_view(), name='voucher-account'),
+    path('view-voucher/', ViewVoucherAccount.as_view(), name='voucher-account'),
     path('add-item/', AddItemView.as_view(), name='add-item'),
     path('item-detail/<slug>/', ItemDetailView.as_view(), name="product"),
     path('edit-item/<slug>/', EditItemView.as_view(), name="edit-item"),
@@ -24,7 +29,7 @@ urlpatterns = [
     path('json-add-to-cart/<slug>/', add_to_cart_json, name='json-add-to-cart'),
     path('add-single-item-to-cart/<slug>/', add_single_item_from_cart, name="add-single-item-to-cart"),
     path('remove-item-from-cart/<slug>/', remove_single_item_from_cart, name='remove-single-item-from-cart'),   
-    path('cash-payment/', CashPaymentView.as_view(), name="cash-payment"),
+    path('voucher-payment/', VoucherPaymentView.as_view(), name="voucher-payment"),
     path('card-payment/', CardPaymentView.as_view(), name='card-payment'),
     path('profile/', ProfileSummaryView.as_view(), name='profile'),
     path('orders', OrderListView.as_view(), name="orders"),

@@ -175,9 +175,9 @@
                 <hr>
                 {%if request.user.is_authenticated%}
                 {%if item in cart%}
-                  <a class="btn cart-btn btn-outline-danger btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Remove From Cart</a>
+                  <a class="btn cart-btn btn-outline-danger btn-sm btn-rounded waves-effect" data-href="{% url 'core:json-add-to-cart' item.slug %}">Remove From Cart</a>
                 {%else%}
-                  <a class="btn cart-btn btn-outline-primary btn-sm" data-href="{% url 'core:json-add-to-cart' item.slug %}">Add To Cart</a>
+                  <a class="btn cart-btn btn-outline-primary btn-sm btn-rounded waves-effect" data-href="{% url 'core:json-add-to-cart' item.slug %}">Add To Cart</a>
                 {% endif %}
                 {%else%}
                   <a href="{% url 'account_login'%}" class="btn btn-outline-primary btn-sm">Login To Add To Cart</a>

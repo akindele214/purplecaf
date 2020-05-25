@@ -118,24 +118,30 @@
                 <strong>R{{ order.get_total_quote }}</strong>
               </li>
             </div>
-            <form class="mt-4" action="https://sandbox.payfast.co.za/eng/process" method="POST" id="myform">
-              <input type="hidden" name="merchant_id" value="10017256">
-              <input type="hidden" name="merchant_key" value="1pnlssv0d8k7d">
-              <input type="hidden" name="return_url" value="https://5edd789a.ngrok.io/paymentsuccess/">
-              <input type="hidden" name="cancel_url" value="https://5edd789a.ngrok.io/cancelpayment/">
-              <input type="hidden" name="notify_url" value="https://5edd789a.ngrok.io/processpayment/">        
-              <input type="hidden" name="email_address" value="{{user.email}}">
-              <input type="hidden" name="amount" value="{{ order.get_total_quote }}">
-              <input type="hidden" name="item_name" value="{{ order.ref_code }}">
-              <input type="hidden" name="email_confirmation" value="1">
-              <input type="hidden" name="confirmation_address" value="{{user.email}}">
-              <input type="hidden" name="payment_method" value="card">
-              <!-- <input type="submit" value="Submit"> -->
-              <a type="submit" onclick="document.getElementById('myform').submit()">
-                <img src="https://www.payfast.co.za/images/buttons/light-small-paynow.png" width="165"
-                height="36" alt="Buy" title="Buy Now with PayFast" />
-              </a>
-            </form>
+            {% if is_closed %}
+            <li class="list-group-item justify-content-between">
+              <a class="text-center">Sorry, We're Closed For The Day</a>
+            </li>
+            {% else %}
+              <form class="mt-4" action="https://sandbox.payfast.co.za/eng/process" method="POST" id="myform">
+                <input type="hidden" name="merchant_id" value="10017256">
+                <input type="hidden" name="merchant_key" value="1pnlssv0d8k7d">
+                <input type="hidden" name="return_url" value="https://90e81afd.ngrok.io/paymentsuccess/">
+                <input type="hidden" name="cancel_url" value="https://90e81afd.ngrok.io/cancelpayment/">
+                <input type="hidden" name="notify_url" value="https://90e81afd.ngrok.io/processpayment/">        
+                <input type="hidden" name="email_address" value="{{user.email}}">
+                <input type="hidden" name="amount" value="{{ order.get_total_quote }}">
+                <input type="hidden" name="item_name" value="{{ order.ref_code }}">
+                <input type="hidden" name="email_confirmation" value="1">
+                <input type="hidden" name="confirmation_address" value="{{user.email}}">
+                <input type="hidden" name="payment_method" value="card">
+                <!-- <input type="submit" value="Submit"> -->
+                <a type="submit" onclick="document.getElementById('myform').submit()">
+                  <img src="https://www.payfast.co.za/images/buttons/light-small-paynow.png" width="165"
+                  height="36" alt="Buy" title="Buy Now with PayFast" />
+                </a>
+              </form>
+            {%endif%}
 
             {% comment %} <script src="https://js.stripe.com/v3/"></script>
 
@@ -155,15 +161,19 @@
             </form> {% endcomment %}
             <div class="mb-4"></div>
           </div>
-          {%elif method == "Cash" %}
+          {%elif method == "Voucher" %}
             <div class="card text-center">
               <div class="card-body">
                 <h5 class="card-title">Confirm Order</h5>
                 <p class="card-text">Please look through the order below one more time and confirm.</p>
-                <form action="." method="POST">
-                  {%csrf_token%}
-                  <button value="c" class="btn btn-primary">Confirm Order</button>
-                </form>
+                {% if balance %}
+                  <form action="." method="POST">
+                    {%csrf_token%}
+                      <button value="c" class="btn btn-outline-primary">Confirm Order</button>
+                  </form>
+                {% else %}
+                  <button class="btn btn-outline-primary">Your Voucher balance(R{{account.amount}}) is insufficient to make this order</button>
+                {% endif %}
                 
               </div>
             </div>
@@ -181,7 +191,7 @@
   </main>
 
 
-<script nonce="">  // Create a Stripe client.
+{% comment %} <script nonce="">  // Create a Stripe client.
   var stripe = Stripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
 
   // Create an instance of Elements.
@@ -252,7 +262,7 @@
     form.submit();
   }
 
-</script>
+</script> {% endcomment %}
 
 {% endblock content %}
 

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block head_title %}Voucher {{block.super}}{%endblock%}
+{% block content %}
+  <main>
+    <div class="container">
+
+    <div class="table-responsive text-nowrap">
+    <h3>Search Voucher Account</h3>
+
+    <form class="form-inline" METHOD="POST">
+        <div class="form-group">
+        {% csrf_token %}
+        <input class="form-control mr-sm-1 " type="search" placeholder="Search Account By Username" aria-label="Search" name="q" required>
+        <button class="btn btn-outline-info btn-sm my-2 my-sm-0" type="submit"><i class="fas fa-search fa-1x"></i></button>
+        </div>
+    </form>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Balance</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td style="font-size:1rem; font-weight:400;">
+                <a href="{% url 'core:load-voucher' account.user.username %}" style="text-decoration: underline; color:blue;" >
+                    {{ account.user.username }}
+                </a>
+            </td>
+            <td style="font-size:1rem; font-weight:400;">{{account.amount}}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan='3' style="font-size:1rem; font-weight:400;">{{response}}</td>
+        </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+
+        <hr>
+    </div>
+
+    </div>
+  </main>
+
+{% endblock content %}
+
+

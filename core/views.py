@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import random
+import pytz
+from datetime import datetime
 import string, json
 import requests
 from itertools import chain
@@ -18,8 +20,8 @@ from webpush import send_user_notification
 #from django.contrib.gis.utils import GeoIP
 
 # Create your views here.
-from .models import Item, Images, Order, OrderItem, Address, Payment
-from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm, SearchForm
+from .models import Item, Images, Order, OrderItem, Address, Payment, VoucherAccount
+from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm, SearchForm, VoucherForm
 from django.forms import modelformset_factory
 
 # REST FRAMEWORK
@@ -103,6 +105,82 @@ class SearchView(ListView):
         return Item.objects.none() 
 
 
+class ViewVoucherAccount(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        u = request.user
+        voucher_account = VoucherAccount.objects.get(user=u)
+        order = Order.objects.filter(user=u)
+        context = {
+            'voucher_account': voucher_account,
+            'order': order,
+        }
+
+        return render(self.request, 'view_voucher.html', context)
+
+class SearchVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        context = {
+            'response': ""
+        }
+        return render(request, 'voucher.html')
+    
+    def post(self, request, *args, **kwargs):
+        request = self.request       
+        query = request.POST.get('q', None)
+        account = VoucherAccount.objects.filter(user__username=query)
+
+        context = {
+            'accounts':account,
+            'response': "Not Found"
+        }
+        return render(request, 'voucher.html', context)
+              
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_superuser
+
+class AddVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        username = kwargs['username']
+        user = User.objects.get(username=username)
+        voucher_account = VoucherAccount.objects.get(user=user)
+        form = VoucherForm()
+        order = Order.objects.filter(user__exact=user)
+
+        context = {
+            'form': form,
+            'voucher_account': voucher_account,
+            'order': order,
+            'username': username,
+        }
+        return render(request, 'addvoucher.html', context)
+    
+    def post(self, request, *args, **kwargs):
+        username = kwargs['username']
+        user = User.objects.get(username=username)
+        voucher_account = VoucherAccount.objects.get(user=user)
+        form = VoucherForm(self.request.POST or None)
+        order = Order.objects.filter(user__exact=user)
+        if request.method == 'POST':
+            if form.is_valid():
+                amount = form.cleaned_data.get('amount')
+                voucher_account.amount += amount
+                voucher_account.save()
+                messages.success(request, f"R{amount} has been added to {username} voucher balance")
+                return redirect("core:load-voucher", username=username)
+            else:
+                messages.warning(request, 'Invalid Form')
+                return redirect('core:home')
+
+        context = {
+            'form': form,
+            'voucher_account': voucher_account,
+            'order': order,
+            'username': username,
+        }
+        return render(request, 'addvoucher.html', context)        
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_superuser
 
 class AddItemView(UserPassesTestMixin, View):
     
@@ -215,7 +293,6 @@ class EditItemView(UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
 
-
 class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
         try:
@@ -228,7 +305,6 @@ class OrderSummaryView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             messages.warning(self.request, "You do not have an active order")
             return redirect("/")
-
 
 @login_required
 def add_to_cart(request, slug):
@@ -505,8 +581,10 @@ class CheckOutView(LoginRequiredMixin, View):
                 if payment_option == 'Card':
                     # return render(self.request, "payment.html", {'method':'Card'})
                     return redirect('core:card-payment')
-                elif payment_option == 'Cash':
-                    return render(self.request, "payment.html", {'method':'Cash'})
+                elif payment_option == 'Voucher':
+                    messages.info(self.request, 'U chose voucher')
+                    return redirect('core:voucher-payment')
+                    # return render(self.request, "payment.html", {'method':'Cash'})
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
@@ -541,10 +619,7 @@ class CashPaymentView(LoginRequiredMixin, View):
         amount = int(order.get_total() * 100)
         
         try:
-
-            # create the payment
             payment = Payment()
-            # payment.stripe_charge_id = charge['id']
             payment.user = self.request.user
             payment.amount_gross = order.get_total()
             payment.payment_option = payment_option
@@ -772,28 +847,165 @@ class CardPaymentView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
         user = self.request.user
-        if order.delivery_option == 'RD':
-            if order.shipping_address:
+        is_closed = False
+        service_charge = order.service_charge
+        closed_hour = [1,2,3,4,5,6,7,22,23,24]
+        sa_time = datetime.now(pytz.timezone('Africa/Johannesburg'))
+        if sa_time.hour in closed_hour:
+            is_closed = True
+
+        if service_charge == 5 or 10:                
+            if order.delivery_option == 'RD':
+                if order.shipping_address:
+                    context = {
+                        'order': order,
+                        'DISPLAY_COUPON_FORM': False,
+                        'method': 'Card',
+                        'is_closed': is_closed,
+                        'service_charge': service_charge,
+                        'user': user
+                    }        
+                    return render(self.request, "payment.html", context)
+                else:
+                    messages.info(self.request, "You have not added a shipping address")
+                    return redirect('core:checkout')
+            elif order.delivery_option == 'PU':
                 context = {
                     'order': order,
                     'DISPLAY_COUPON_FORM': False,
                     'method': 'Card',
-                    'user': user
-                }        
+                    'is_closed': is_closed,
+                    'service_charge': service_charge,
+                    'user': user        
+                    }
                 return render(self.request, "payment.html", context)
             else:
-                messages.info(self.request, "You have not added a shipping address")
+                messages.info(self.request, "Please select a delivery option")
                 return redirect('core:checkout')
-        elif order.delivery_option == 'PU':
-            context = {
-                'order': order,
-                'DISPLAY_COUPON_FORM': False,
-                'method': 'Card',
-                'user': user        
-                }
-            return render(self.request, "payment.html", context)
 
         return render(self.request, 'home.html')
+
+class VoucherPaymentView(LoginRequiredMixin, View):
+    def get(self, *args, **kwargs):
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        user = self.request.user
+        account = VoucherAccount.objects.get(user=self.request.user)
+        is_closed = False
+        balance = False
+        service_charge = order.service_charge
+        closed_hour = [1,2,3,4,5,6,7,22,23,24]
+        sa_time = datetime.now(pytz.timezone('Africa/Johannesburg'))
+        if sa_time.hour in closed_hour:
+            is_closed = True
+        if (account.amount - order.get_total_quote()) >= 0:
+            balance = True
+
+        if service_charge == 5 or 10:                
+            if order.delivery_option == 'RD':
+                if order.shipping_address:
+                    context = {
+                        'order': order,
+                        'DISPLAY_COUPON_FORM': False,
+                        'method': 'Voucher',
+                        'account': account,
+                        'balance': balance,
+                        'is_closed': is_closed,
+                        'service_charge': service_charge,
+                        'user': user
+                    }        
+                    return render(self.request, "payment.html", context)
+                else:
+                    messages.info(self.request, "You have not added a shipping address")
+                    return redirect('core:checkout')
+            elif order.delivery_option == 'PU':
+                context = {
+                    'order': order,
+                    'DISPLAY_COUPON_FORM': False,
+                    'method': 'Voucher',
+                    'account': account,
+                    'balance': balance,
+                    'is_closed': is_closed,
+                    'service_charge': service_charge,
+                    'user': user        
+                    }
+                return render(self.request, "payment.html", context)
+            else:
+                messages.info(self.request, "Please select a delivery option")
+                return redirect('core:checkout')
+
+        return render(self.request, 'home.html')    
+    
+    def post(self, *args, **kwargs):
+        if self.request.method == 'POST':
+            order = Order.objects.get(user=self.request.user, ordered=False)
+            user = self.request.user
+            account = VoucherAccount.objects.get(user=self.request.user)
+            is_closed = False
+            balance = False
+            service_charge = order.service_charge
+            closed_hour = [1,2,3,4,5,6,7,22,23,24]
+            sa_time = datetime.now(pytz.timezone('Africa/Johannesburg'))
+            if sa_time.hour in closed_hour:
+                is_closed = True
+            if (account.amount - order.get_total_quote()) >= 0:
+                balance = True
+
+
+            if balance:
+                if service_charge == 5 or 10:                
+                    if order.delivery_option == 'RD':
+                        if order.shipping_address:
+                            account.amount -= order.get_total_quote()
+                            account.save()
+                            payment = Payment()
+                            payment.user = user
+                            payment.amount_gross = order.get_total_quote()
+                            payment.amount_fee = order.service_charge
+                            payment.amount_net = order.get_total()
+                            payment.payment_option = 'Voucher'
+                            payment.ref_code = order.ref_code
+                            payment.save()
+                            order.ordered = True
+                            order.payment = payment
+                            order_items = order.item.all()
+                            order_items.update(ordered=True)
+                            for item in order_items:
+                                item.save()
+                            order.save() 
+                            messages.success(self.request, 'Order Successful')
+                            return render(self.request, "home.html")
+                        else:
+                            messages.info(self.request, "You have not added a shipping address")
+                            return redirect('core:checkout')
+                    elif order.delivery_option == 'PU':
+                        account.amount -= order.get_total_quote()
+                        account.save()
+                        payment = Payment()
+                        payment.user = user
+                        payment.amount_gross = order.get_total_quote()
+                        payment.amount_fee = order.service_charge
+                        payment.amount_net = order.get_total()
+                        payment.payment_option = 'Voucher'
+                        payment.ref_code = order.ref_code
+                        payment.save()
+                        order.ordered = True
+                        order.payment = payment
+                        order_items = order.item.all()
+                        order_items.update(ordered=True)
+                        for item in order_items:
+                            item.save()
+                        order.save() 
+                        messages.success(self.request, 'Order Successful')
+                        return render(self.request, "home.html")
+                    else:
+                        messages.info(self.request, "Please select a delivery option")
+                        return redirect('core:checkout')
+                return render(self.request, 'home.html')
+            else:
+                messages.warning(self.request, 'Insufficient Voucher Balance')
+                render(self.request, 'home.html')
+        else:
+            return render(self.request, 'home.html')        
 
 class CardPaymentSucessView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
