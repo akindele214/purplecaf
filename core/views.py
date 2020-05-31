@@ -127,11 +127,11 @@ class SearchVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         request = self.request       
         query = request.POST.get('q', None)
-        account = VoucherAccount.objects.filter(user__username=query)
+        account = VoucherAccount.objects.filter(user__username__icontains=query)
 
         context = {
             'accounts':account,
-            'response': "Not Found"
+            'response': "Not Found, Please Check Username"
         }
         return render(request, 'voucher.html', context)
               
@@ -582,7 +582,6 @@ class CheckOutView(LoginRequiredMixin, View):
                     # return render(self.request, "payment.html", {'method':'Card'})
                     return redirect('core:card-payment')
                 elif payment_option == 'Voucher':
-                    messages.info(self.request, 'U chose voucher')
                     return redirect('core:voucher-payment')
                     # return render(self.request, "payment.html", {'method':'Cash'})
                 else:
@@ -785,7 +784,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://f09a24ad.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://f295306e7cc4.ngrok.io/order/{item_name}/"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful')                
                 return render(self.request, 'home.html')
@@ -831,10 +830,12 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 for item in order_items:
                     item.save()
                 order.save()
-
-
-                messages.success(self.request, 'Payment Successful')
-                
+                user_ = User.objects.get(username='lekan')
+                payload = {"head": "Order Alert!", "body": "New Order Alert", 
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://005103d6.ngrok.io/order/{item_name}/"}
+                # payload = {"head": "Welcome!", "body": "Hello World"}
+                send_user_notification(user=user_, payload=payload, ttl=1000)
+                messages.success(self.request, 'Payment Successful, Order Completed')
                 return redirect('core:home')
             else:
                 messages.warning(self.request, 'Payment Unsuccessful')
@@ -849,7 +850,7 @@ class CardPaymentView(LoginRequiredMixin, View):
         user = self.request.user
         is_closed = False
         service_charge = order.service_charge
-        closed_hour = [1,2,3,4,5,6,7,22,23,24]
+        closed_hour = [1,2,3,4,5,6,7,22,24]
         sa_time = datetime.now(pytz.timezone('Africa/Johannesburg'))
         if sa_time.hour in closed_hour:
             is_closed = True
@@ -893,7 +894,7 @@ class VoucherPaymentView(LoginRequiredMixin, View):
         is_closed = False
         balance = False
         service_charge = order.service_charge
-        closed_hour = [1,2,3,4,5,6,7,22,23,24]
+        closed_hour = [1,2,3,4,5,6,7,23,24]
         sa_time = datetime.now(pytz.timezone('Africa/Johannesburg'))
         if sa_time.hour in closed_hour:
             is_closed = True
@@ -972,8 +973,13 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                             for item in order_items:
                                 item.save()
                             order.save() 
-                            messages.success(self.request, 'Order Successful')
-                            return render(self.request, "home.html")
+                            user_ = User.objects.get(username='lekan')
+                            payload = {"head": "Order Alert!", "body": "New Order Alert", 
+                                        "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://801aa503.ngrok.io/order/{order.ref_code}/"}
+                            # payload = {"head": "Welcome!", "body": "Hello World"}
+                            send_user_notification(user=user_, payload=payload, ttl=1000)
+                            messages.success(self.request, 'Payment Successful, Order Completed')
+                            return redirect('core:home')
                         else:
                             messages.info(self.request, "You have not added a shipping address")
                             return redirect('core:checkout')
@@ -995,8 +1001,12 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                         for item in order_items:
                             item.save()
                         order.save() 
-                        messages.success(self.request, 'Order Successful')
-                        return render(self.request, "home.html")
+                        user_ = User.objects.get(username='lekan')
+                        payload = {"head": "Order Alert!", "body": "New Order Alert", 
+                                    "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://801aa503.ngrok.io/order/{order.ref_code}/"}
+                        send_user_notification(user=user_, payload=payload, ttl=1000)
+                        messages.success(self.request, 'Payment Successful, Order Completed')
+                        return redirect('core:home')
                     else:
                         messages.info(self.request, "Please select a delivery option")
                         return redirect('core:checkout')

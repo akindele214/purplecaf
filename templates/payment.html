@@ -126,9 +126,9 @@
               <form class="mt-4" action="https://sandbox.payfast.co.za/eng/process" method="POST" id="myform">
                 <input type="hidden" name="merchant_id" value="10017256">
                 <input type="hidden" name="merchant_key" value="1pnlssv0d8k7d">
-                <input type="hidden" name="return_url" value="https://90e81afd.ngrok.io/paymentsuccess/">
-                <input type="hidden" name="cancel_url" value="https://90e81afd.ngrok.io/cancelpayment/">
-                <input type="hidden" name="notify_url" value="https://90e81afd.ngrok.io/processpayment/">        
+                <input type="hidden" name="return_url" value="https://f295306e7cc4.ngrok.io/paymentsuccess/">
+                <input type="hidden" name="cancel_url" value="https://f295306e7cc4.ngrok.io/cancelpayment/">
+                <input type="hidden" name="notify_url" value="https://f295306e7cc4.ngrok.io/processpayment/">        
                 <input type="hidden" name="email_address" value="{{user.email}}">
                 <input type="hidden" name="amount" value="{{ order.get_total_quote }}">
                 <input type="hidden" name="item_name" value="{{ order.ref_code }}">
@@ -162,21 +162,27 @@
             <div class="mb-4"></div>
           </div>
           {%elif method == "Voucher" %}
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Confirm Order</h5>
-                <p class="card-text">Please look through the order below one more time and confirm.</p>
-                {% if balance %}
-                  <form action="." method="POST">
-                    {%csrf_token%}
-                      <button value="c" class="btn btn-outline-primary">Confirm Order</button>
-                  </form>
-                {% else %}
-                  <button class="btn btn-outline-primary">Your Voucher balance(R{{account.amount}}) is insufficient to make this order</button>
-                {% endif %}
-                
-              </div>
-            </div>
+          {% if is_closed %}
+            <li class="list-group-item justify-content-between">
+              <a class="text-center">Sorry, We're Closed For The Day</a>
+            </li>
+          {% else %}
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Confirm Order</h5>
+                  <p class="card-text">Please look through the order below one more time and confirm.</p>
+                  {% if balance %}
+                    <form action="." method="POST">
+                      {%csrf_token%}
+                        <button value="c" class="btn btn-outline-primary">Confirm Order</button>
+                    </form>
+                  {% else %}
+                    <button class="btn btn-outline-primary">Your Voucher balance(R{{account.amount}}) is insufficient to make this order</button>
+                  {% endif %}
+                  
+                </div>
+              </div>          
+          {%endif%}
           {%endif%}
 
         </div>

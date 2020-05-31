@@ -117,9 +117,9 @@
         <!--Shop-->
         <li class="nav-item dropdown">
             <a href="{% url 'core:order-summary' %}"class="nav-link waves-effect">
-              <span class="badge cart_ red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
               <i style="color: ghostwhite;" class="fas fa-shopping-cart"></i>
               <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Cart </span>
+              <span class="badge cart_ red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>              
             </a>
         </li>
 

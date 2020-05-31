@@ -27,8 +27,10 @@
                 <form method="POST" class="form-inline text-center">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Submit</button>
+                    <button class="btn btn-outline-primary btn-sm" id="voucherspinner" onclick="loadSpinner(); this.form.submit();" type="submit">Submit</button>
                 </form>
+                <div hidden id="spinner"></div>
+
             </ul>
             <!-- Cart -->
         
@@ -130,5 +132,47 @@
     </div>
   </main>
 
+    {% block extra_scripts %}
+        <style>
+            #spinner:not([hidden]) {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            }
+
+            #spinner::after {
+            content: "";
+            width: 80px;
+            height: 80px;
+            border: 2px solid #f3f3f3;
+            border-top: 3px solid #0c0c0c;
+            border-radius: 100%;
+            will-change: transform;
+            animation: spin 1s infinite linear
+            }
+
+            @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+            }
+        </style>
+        <script>
+            var spinner = document.getElementById("voucherspinner");
+            var spinner_ = document.getElementById("spinner")
+            function loadSpinner() {
+                spinner.disabled=true;
+                spinner_.removeAttribute('hidden');
+            }
+        </script>
+    {% endblock extra_scripts %}
 {% endblock content %}
 
