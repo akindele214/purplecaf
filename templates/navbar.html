@@ -88,31 +88,34 @@
       </div>
       <!-- Navbar Right Side -->
       <div class="navbar-nav">
-        {% if request.user.is_superuser%}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Admin
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="{% url 'core:add-item' %}">Add Item</a>
-            <a class="dropdown-item" href="{% url 'core:orders' %}">Orders</a>
-            <a class="dropdown-item" href="{% url 'core:search-voucher' %}">Load Voucher</a>
-            {% comment %} <a class="dropdown-item" href="#">Saved Ads</a> {% endcomment %}
-            <div class="dropdown-divider"></div> 
-            {% comment %} <a class="dropdown-item drop down-toggle" data-toggle="dropdown" href="#">Category</a>
-                <div class="dropdown-menu" style='overflow-x: hidden; height: auto; max-height:100px;'>
-                  <a class="dropdown-item" href="">Accommodation</a>
-                  <a class="dropdown-item" href="">Sound Devices</a>
-                  <a class="dropdown-item" href="">Cell/Mobile/Wireless Phones</a>
-                  <a class="dropdown-item" href="">Books</a>
-                  <a class="dropdown-item" href="">Computers</a>
-                  <a class="dropdown-item" href="">TVs</a>
-                  <a class="dropdown-item" href="">Cosmetics</a>
-                  <a class="dropdown-item" href="">Miscellaneous</a>
-                </div> {% endcomment %}
-          </div>
-        </li>
-        {%endif%}
+        {% for x in request.user.groups.all %}
+          {% if "Caf Staff" == x.name or request.user.is_superuser %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Admin
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="{% url 'core:add-item' %}">Add Item</a>
+              <a class="dropdown-item" href="{% url 'core:orders' %}">Orders</a>
+              <a class="dropdown-item" href="{% url 'core:search-voucher' %}">Load Voucher</a>
+              <div class="dropdown-divider"></div> 
+            </div>
+          </li>
+          {% endif %}
+        {% endfor %}
+        {% if request.user.is_superuser %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Admin
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="{% url 'core:add-item' %}">Add Item</a>
+              <a class="dropdown-item" href="{% url 'core:orders' %}">Orders</a>
+              <a class="dropdown-item" href="{% url 'core:search-voucher' %}">Load Voucher</a>
+              <div class="dropdown-divider"></div> 
+            </div>
+          </li>
+        {% endif %}    
         {% if request.user.is_authenticated %}
         <!--Shop-->
         <li class="nav-item dropdown">

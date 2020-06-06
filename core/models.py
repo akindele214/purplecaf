@@ -110,6 +110,14 @@ class Address(models.Model):
     def __str__(self):
         return f'{self.user} - {self.student_number}'
 
+class VoucherLog(models.Model):
+    staff = models.ForeignKey(User, related_name="staff", on_delete=models.SET_NULL, blank=True, null=True)
+    amount = models.IntegerField()
+    loaded_account = models.ForeignKey(User, related_name='customer', on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} loaded R{self.amount} into {self.loaded_account}"
+
 
 class Payment(models.Model):
     user = models.ForeignKey(User,
@@ -184,3 +192,5 @@ class Order(models.Model):
             total += order_item.get_final_price() 
         
         return round(total + self.service_charge,2)
+
+

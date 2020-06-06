@@ -14,13 +14,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.http import HttpResponse, HttpResponseRedirect
 from webpush import send_user_notification
 #from django.contrib.gis.utils import GeoIP
 
 # Create your views here.
-from .models import Item, Images, Order, OrderItem, Address, Payment, VoucherAccount
+from .models import Item, Images, Order, OrderItem, Address, Payment, VoucherAccount, VoucherLog
 from .forms import ItemCreateForm, ItemEditForm, CheckoutForm, CouponForm, OrderDetailForm, IDForm, SearchForm, VoucherForm
 from django.forms import modelformset_factory
 
@@ -65,6 +65,7 @@ class HomeView(ListView):
         item = []
         context = super().get_context_data(*args, **kwargs)
         if self.request.user.is_authenticated:
+            print(self.request.user.groups.all(), 68)
             order = Order.objects.filter(user=self.request.user, ordered=False)
             if order.exists():
                 order = order[0]
@@ -136,7 +137,11 @@ class SearchVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
         return render(request, 'voucher.html', context)
               
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 class AddVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -165,6 +170,8 @@ class AddVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
                 amount = form.cleaned_data.get('amount')
                 voucher_account.amount += amount
                 voucher_account.save()
+                log_transaction = VoucherLog.objects.create(user=request.user, amount=amount, loaded_account=user)
+                log_transaction.save()
                 messages.success(request, f"R{amount} has been added to {username} voucher balance")
                 return redirect("core:load-voucher", username=username)
             else:
@@ -180,7 +187,11 @@ class AddVoucher(UserPassesTestMixin, LoginRequiredMixin, View):
         return render(request, 'addvoucher.html', context)        
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 class AddItemView(UserPassesTestMixin, View):
     
@@ -223,7 +234,11 @@ class AddItemView(UserPassesTestMixin, View):
         return render(request, 'create_item.html', context)
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 class ItemDetailView(DetailView):
     model = Item
@@ -291,7 +306,11 @@ class EditItemView(UserPassesTestMixin, View):
 
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
@@ -703,7 +722,11 @@ class OrderDetailView(UserPassesTestMixin, View):
                 return redirect('core:orders')
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 
 class OrderListView(UserPassesTestMixin, View):
@@ -739,7 +762,11 @@ class OrderListView(UserPassesTestMixin, View):
 
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.is_superuser
+        staffs = Group.objects.get(name="Caf Staff")
+        is_permissioned = False
+        if self.request.user in staffs.user_set.all() or self.request.user.is_superuser:
+            is_permissioned = True
+        return is_permissioned
 
 class ProcessPaymentView(LoginRequiredMixin, View):
     @method_decorator(csrf_exempt)
