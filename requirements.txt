@@ -16,7 +16,7 @@ django-notifications-hq==1.6.0
 django-phone-field==1.8.0
 django-phonenumber-field==4.0.0
 django-webpush==0.3.2
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 http-ece==1.1.0
 idna==2.8
 jsonfield==3.1.0
