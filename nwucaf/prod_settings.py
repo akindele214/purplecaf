@@ -19,7 +19,7 @@ INSTALLED_APPS.append('storages')
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {}
 DATABASES['default'] = dj_database_url.parse(
-    get_env_variable('DATABASE_URL', 'postgres://zwpoiatpncjxef:fc6465fb1a66d9fb5245a800526082f9a989446ea5ce4ffb49fe1dd6eea8c491@ec2-18-215-111-67.compute-1.amazonaws.com:5432/d5f7o8m18dnf77'), conn_max_age=600)
+    get_env_variable('DATABASE_URL', 'postgres://zzlbguznvikrcs:02b5db8d846011a570425ce73c29be16eb77fbac3eedb2adbf6bad167a27f728@ec2-3-215-57-87.compute-1.amazonaws.com:5432/db1og9cm28l1fd'), conn_max_age=600)
 
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 

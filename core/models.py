@@ -5,6 +5,8 @@ from PIL import Image
 from django.utils.text import slugify
 import time
 
+from nwucaf.helpers import image_helper
+
 # Create your models here.
 
 CATEGORY_CHOICES = (
@@ -75,7 +77,8 @@ class Item(models.Model):
 
 class Images(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='item_pic/', blank=True, null=True)
+    image = models.ImageField(upload_to=image_helper,verbose_name="Item image",
+                    blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super(Images, self).save(*args, **kwargs)
