@@ -45,3 +45,4 @@ dropbox==10.4.1
 psycopg2-binary==2.8.4
 psycopg2==2.8.6
 whitenoise==5.1.0
+gunicorn==20.0.4
