@@ -65,7 +65,6 @@ class HomeView(ListView):
         item = []
         context = super().get_context_data(*args, **kwargs)
         if self.request.user.is_authenticated:
-            print(self.request.user.groups.all(), 68)
             order = Order.objects.filter(user=self.request.user, ordered=False)
             if order.exists():
                 order = order[0]
@@ -96,7 +95,6 @@ class SearchView(ListView):
     def get_queryset(self):
         request = self.request
         query = request.GET.get('q', None)
-        print(query)
         if len(query) > 2:
             blog_results = Item.objects.filter(title__icontains=query)
             queryset_chain = chain(blog_results)
@@ -598,17 +596,14 @@ class CheckOutView(LoginRequiredMixin, View):
 
                 payment_option = form.cleaned_data.get('payment_option')
                 if payment_option == 'Card':
-                    # return render(self.request, "payment.html", {'method':'Card'})
                     return redirect('core:card-payment')
                 elif payment_option == 'Voucher':
                     return redirect('core:voucher-payment')
-                    # return render(self.request, "payment.html", {'method':'Cash'})
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
                     return redirect('core:checkout')
             else:
-                print("Invalid")
                 messages.info(self.request, 'Please fill in required fields')
                 return redirect('core:checkout')
         except ObjectDoesNotExist:
@@ -618,7 +613,6 @@ class CheckOutView(LoginRequiredMixin, View):
 
 class CashPaymentView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
-        # payment_option  = self.kwargs['payment_option']
         order = Order.objects.get(user=self.request.user, ordered=False)
         if order.shipping_address:
             context = {
@@ -654,14 +648,12 @@ class CashPaymentView(LoginRequiredMixin, View):
 
             order.ordered = True
             order.payment = payment
-            # order.ref_code = create_ref_code()
             order.save()
 
             messages.success(self.request, "Your order was successful!")
             return redirect("/")
 
         except Exception as e:
-            # send an email to ourselves
             messages.warning(
                 self.request, "A serious error occurred. We have been notifed.")
             return redirect("/")
@@ -747,9 +739,7 @@ class OrderListView(UserPassesTestMixin, View):
     def post(self, *args, **kwargs):
         if self.request.method == 'POST':
             form = SearchForm(self.request.POST, self.request.FILES or None)
-            print(dir(form))
             ID = form['searchfield'].data
-            print(ID)
             order = Order.objects.filter(ordered=True, student_number=ID).order_by('-pk')
             context = {
                 'object': order,
@@ -811,7 +801,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://f295306e7cc4.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{item_name}/"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful')                
                 return render(self.request, 'home.html')
@@ -859,7 +849,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://005103d6.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{item_name}/"}
                 # payload = {"head": "Welcome!", "body": "Hello World"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful, Order Completed')
@@ -1002,7 +992,7 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                             order.save() 
                             user_ = User.objects.get(username='lekan')
                             payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                                        "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://801aa503.ngrok.io/order/{order.ref_code}/"}
+                                        "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{order.ref_code}/"}
                             # payload = {"head": "Welcome!", "body": "Hello World"}
                             send_user_notification(user=user_, payload=payload, ttl=1000)
                             messages.success(self.request, 'Payment Successful, Order Completed')
@@ -1030,7 +1020,7 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                         order.save() 
                         user_ = User.objects.get(username='lekan')
                         payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                                    "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://801aa503.ngrok.io/order/{order.ref_code}/"}
+                                    "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{order.ref_code}/"}
                         send_user_notification(user=user_, payload=payload, ttl=1000)
                         messages.success(self.request, 'Payment Successful, Order Completed')
                         return redirect('core:home')

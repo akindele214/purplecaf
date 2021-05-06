@@ -68,19 +68,10 @@
     {% if request.user.is_authenticated %}
     <span class="badge cart_ rd"> {{ request.user|cart_item_count }} </span>
     {%endif%}
-    {% comment %} {%if request.user.is_authenticated %}
-    {% live_notify_badge as count %}
-    
-    {% if count %}
-    <span class="badge bage-light" style="color: #fafafa;">{{count}}
-    </span>
-    {%endif%}
-    {%endif%} {% endcomment %}
 
     </button>
     <div class="collapse navbar-collapse" id="navbarToggle">
       <div class="navbar-nav mr-auto">
-        <!--<a class="nav-item nav-link" href="">About</a>-->
     {% comment %} <form class="form-inline my-2 my-lg-0" METHOD ="GET" action="{% url 'blog-search' %}">
     <input class="form-control mr-sm-1 " type="search" placeholder="Search" aria-label="Search" name="q" required>
     <button class="btn btn-outline-info my-2 my-sm-0" type="submit"><i class="fas fa-search fa-1x"></i></button>
@@ -121,8 +112,8 @@
         <li class="nav-item dropdown">
             <a href="{% url 'core:order-summary' %}"class="nav-link waves-effect">
               <i style="color: ghostwhite;" class="fas fa-shopping-cart"></i>
-              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Cart </span>
-              <span class="badge cart_ red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>              
+              <span style="color: ghostwhite;" class="clearfix d-non d-sm-inline-block"> Cart <span class="badge ml-1 cart_ red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>  </span>
+                           
             </a>
         </li>
 

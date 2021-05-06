@@ -1,0 +1,1 @@
+web: gunicorn nwucaf.wsgi --preload --log-file -
