@@ -39,7 +39,7 @@ swapper==1.1.2.post1
 urllib3==1.24.2
 dj-database-url==0.5.0
 django-auto-prefetch==0.0.6
-django-debug-toolbar==2.2
+django-debug-toolbar==2.2.1
 django-storages==1.10
 dropbox==10.4.1
 psycopg2-binary==2.8.4
