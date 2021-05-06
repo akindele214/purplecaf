@@ -23,8 +23,10 @@ DATABASES['default'] = dj_database_url.parse(
 
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+VENV_PATH = os.path.dirname(BASE_DIR)
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 STATIC_ROOT = os.path.join(VENV_PATH, 'static_root')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
