@@ -7,7 +7,7 @@ from nwucaf.helpers.settings_helper import get_env_variable
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', get_env_variable('DJANGO_SETTINGS_MODULE','nwucaf.prod_settings'))
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', get_env_variable('DJANGO_SETTINGS_MODULE','nwucaf.dev_settings'))
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

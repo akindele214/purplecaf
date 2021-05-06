@@ -77,7 +77,7 @@ class Item(models.Model):
 
 class Images(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=image_helper,verbose_name="Item image",
+    image = models.ImageField(upload_to=image_helper.get_upload_path,verbose_name="Item image",
                     blank=True, null=True)
 
     def save(self, *args, **kwargs):
