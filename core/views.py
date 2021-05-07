@@ -801,7 +801,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://purple-caf.herokuapp.com/order/{item_name}/"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful')                
                 return render(self.request, 'home.html')
@@ -849,7 +849,7 @@ class ProcessPaymentView(LoginRequiredMixin, View):
                 order.save()
                 user_ = User.objects.get(username='lekan')
                 payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{item_name}/"}
+                            "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://purple-caf.herokuapp.com/order/{item_name}/"}
                 # payload = {"head": "Welcome!", "body": "Hello World"}
                 send_user_notification(user=user_, payload=payload, ttl=1000)
                 messages.success(self.request, 'Payment Successful, Order Completed')
@@ -992,7 +992,7 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                             order.save() 
                             user_ = User.objects.get(username='lekan')
                             payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                                        "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{order.ref_code}/"}
+                                        "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://purple-caf.herokuapp.com/order/{order.ref_code}/"}
                             # payload = {"head": "Welcome!", "body": "Hello World"}
                             send_user_notification(user=user_, payload=payload, ttl=1000)
                             messages.success(self.request, 'Payment Successful, Order Completed')
@@ -1020,7 +1020,7 @@ class VoucherPaymentView(LoginRequiredMixin, View):
                         order.save() 
                         user_ = User.objects.get(username='lekan')
                         payload = {"head": "Order Alert!", "body": "New Order Alert", 
-                                    "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://35bd7a4671dd.ngrok.io/order/{order.ref_code}/"}
+                                    "icon": "https://i.imgur.com/dRDxiCQ.png", "url": f"https://purple-caf.herokuapp.com/order/{order.ref_code}/"}
                         send_user_notification(user=user_, payload=payload, ttl=1000)
                         messages.success(self.request, 'Payment Successful, Order Completed')
                         return redirect('core:home')

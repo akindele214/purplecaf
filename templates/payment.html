@@ -126,9 +126,9 @@
               <form class="mt-4" action="https://sandbox.payfast.co.za/eng/process" method="POST" id="myform">
                 <input type="hidden" name="merchant_id" value="10017256">
                 <input type="hidden" name="merchant_key" value="1pnlssv0d8k7d">
-                <input type="hidden" name="return_url" value="https://7c0d9e937d7e.ngrok.io/paymentsuccess/">
-                <input type="hidden" name="cancel_url" value="https://7c0d9e937d7e.ngrok.io/cancelpayment/">
-                <input type="hidden" name="notify_url" value="https://7c0d9e937d7e.ngrok.io/processpayment/">        
+                <input type="hidden" name="return_url" value="https://purple-caf.herokuapp.com/paymentsuccess/">
+                <input type="hidden" name="cancel_url" value="https://purple-caf.herokuapp.com/cancelpayment/">
+                <input type="hidden" name="notify_url" value="https://purple-caf.herokuapp.com/processpayment/">        
                 <input type="hidden" name="email_address" value="{{user.email}}">
                 <input type="hidden" name="amount" value="{{ order.get_total_quote }}">
                 <input type="hidden" name="item_name" value="{{ order.ref_code }}">
